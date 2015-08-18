@@ -1,0 +1,5 @@
+deps do
+  # github "[your-github-name]/example"
+  github "rosylilly/power_assert.cr"
+  github "waterlink/mocks.cr"
+end
