@@ -3,6 +3,8 @@
 /.crystal/
 /doc/
 tjeneste # compiler output
+*.sublime-project
+*.sublime-workspace
 
 
 # Libraries don't need dependency lock
