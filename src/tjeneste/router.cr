@@ -52,6 +52,7 @@ module Tjeneste
 
     abstract class Matcher
       abstract def match(request : RequestState) : RequestState?
+      abstract def ==(other : Matcher)
     end
 
     class PathMatcher < Matcher
@@ -59,6 +60,8 @@ module Tjeneste
       PREDEFINED_MATCHERS = {
         int: /\A\d+/
       }
+
+      getter :matcher
 
       def initialize(@matcher)
       end
@@ -96,6 +99,14 @@ module Tjeneste
           MatchFailure.new("#{predef.source} != #{request.path}")
         end
       end
+
+      def ==(other : PathMatcher)
+        @matcher == other.matcher
+      end
+
+      def ==(other)
+        false
+      end
     end
 
     class VerbMatcher < Matcher
@@ -114,11 +125,20 @@ module Tjeneste
     end
 
     class Node
-      property :parent, :children, :matchers
+      property :parent
+      getter :children, :matchers
 
-      def initialize(@matchers = [] of Matcher, @children = [] of Node)
+      def initialize(
+        @matchers = [] of Matcher,
+        @children = [] of Node,
+        @action = nil : (-> Nil)?)
         @children.each{ |c| c.parent = self }
       end
+
+      # def children=(children)
+      #   @children = children
+      #   @children.each{ |c| c.parent = self }
+      # end
 
       def root?
         parent == nil
@@ -142,9 +162,13 @@ module Tjeneste
         request if all_match
       end
 
-      #def inspect
-      #  "Node(children: #{children.map(&:inspect).join(",")}, segment: #{segment})"
-      #end
+      def to_s
+       "Node(matchers: #{matchers}, children: [#{children.map{ |c| c.to_s as String }.join(",")}])"
+      end
+
+      def ==(other : Node)
+        matchers == other.matchers && children == other.children
+      end
     end
 
     class Route
