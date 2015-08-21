@@ -12,14 +12,21 @@ module Tjeneste
         end
       end
 
-      getter :root, :logger
+      getter :logger
 
-      def initialize(@root, @logger = Logger.new(STDOUT) : Logger)
+      def initialize(root_node : Node, @logger = Logger.new(STDOUT) : Logger)
+        # The root nodes matchers are not checked in #route, therefore
+        # the passed root node has to be wrapped.
+        @internal_root = Node.new(children: [root_node])
+      end
+
+      def root
+        @internal_root.children.first
       end
 
       def route(request) : Route?
-        node = root
-        node_path = [node]
+        node = @internal_root
+        node_path = [] of Node
         req = RequestState.new(request)
 
         while !node.leaf?

@@ -53,7 +53,6 @@ module Tjeneste
       def initialize(block : NodeBuilder -> Nil)
         children = NodeBuilder.build(block)
         root_node = Node.new(
-          matchers: [PathMatcher.new("/")],
           children: children
         )
         @result = Router.new(root_node)

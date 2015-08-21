@@ -17,7 +17,6 @@ describe Tjeneste::Routing::RouterBuilder do
     assert router.is_a?(Tjeneste::Routing::Router)
 
     routing_tree = Node.new(
-      matchers: [Tjeneste::Routing::PathMatcher.new("/")],
       children: [
         Node.new(
           matchers: [Tjeneste::Routing::PathMatcher.new("users/")],

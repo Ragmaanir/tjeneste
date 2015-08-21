@@ -13,7 +13,7 @@ describe Tjeneste::Routing::Router do
     ])
     router = Tjeneste::Routing::Router.new(root)
 
-    req = HTTP::Request.new("GET", "users")
+    req = HTTP::Request.new("GET", "/users")
 
     route = router.route(req)
 
@@ -30,7 +30,7 @@ describe Tjeneste::Routing::Router do
   end
 
   it "matches nested paths" do
-    root = NODE.new(matchers: [PathMatcher.new("/")], children: [
+    root = NODE.new(children: [
       NODE.new(matchers: [PathMatcher.new("users/")], children: [
         NODE.new(matchers: [PathMatcher.new("special/")], children: [
           NODE.new(matchers: [PathMatcher.new(:int)])
@@ -47,7 +47,7 @@ describe Tjeneste::Routing::Router do
   end
 
   it "matches HTTP verbs" do
-    root = NODE.new(matchers: [PathMatcher.new("/")], children: [
+    root = NODE.new(children: [
       NODE.new(matchers: [PathMatcher.new("users/"), VerbMatcher.new(Tjeneste::Routing::Verb::POST)])
     ])
     router = Tjeneste::Routing::Router.new(root)
