@@ -14,8 +14,16 @@ module Tjeneste
       end
 
       def get(name, block : HttpContext -> Nil) : Nil
+        action(Verb::GET, name, block)
+      end
+
+      def post(name, block : HttpContext -> Nil) : Nil
+        action(Verb::POST, name, block)
+      end
+
+      private def action(verb : Verb, name, block : HttpContext -> Nil) : Nil
         node = Node.new(
-          matchers: [PathMatcher.new(name)],
+          matchers: [PathMatcher.new(name), VerbMatcher.new(verb)],
           action: block
         )
         @node_stack.last << node

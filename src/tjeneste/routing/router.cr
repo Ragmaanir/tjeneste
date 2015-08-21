@@ -2,6 +2,16 @@ module Tjeneste
   module Routing
     class Router
 
+      class NoRouteFoundException < Exception
+        def initialize(@request)
+          super(to_s)
+        end
+
+        def to_s
+          "No route found for: #{@request.method} #{@request.path}"
+        end
+      end
+
       getter :root, :logger
 
       def initialize(@root, @logger = Logger.new(STDOUT) : Logger)
@@ -28,6 +38,12 @@ module Tjeneste
         end
 
         Route.new(node_path, node.action) if node.leaf?
+      end
+
+      def route!(request) : Route
+        r = route(request)
+        raise NoRouteFoundException.new(request) unless r
+        r as Route
       end
 
     end

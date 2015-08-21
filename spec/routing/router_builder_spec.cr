@@ -23,7 +23,10 @@ describe Tjeneste::Routing::RouterBuilder do
           matchers: [Tjeneste::Routing::PathMatcher.new("users/")],
           children: [
             Node.new(
-              matchers: [Tjeneste::Routing::PathMatcher.new("")],
+              matchers: [
+                Tjeneste::Routing::PathMatcher.new(""),
+                Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET)
+              ],
               action: action
             )
           ]

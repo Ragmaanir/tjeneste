@@ -59,7 +59,7 @@ module Tjeneste
         end
       end
 
-      def ==(other : PathMatcher)
+      def ==(other : PathMatcher) : Bool
         @matcher == other.matcher
       end
 
@@ -69,7 +69,7 @@ module Tjeneste
     end
 
     class VerbMatcher < Matcher
-      property :verb
+      getter :verb
 
       def initialize(@verb : Verb)
       end
@@ -80,6 +80,14 @@ module Tjeneste
         else
           MatchFailure.new("FAILURE: #{verb} != #{request.request.method}")
         end
+      end
+
+      def ==(other : VerbMatcher) : Bool
+        @verb == other.verb
+      end
+
+      def ==(other)
+        false
       end
     end
 
