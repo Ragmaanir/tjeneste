@@ -11,6 +11,22 @@ module Tjeneste
         parent == nil
       end
 
+      def depth : Int
+        # if parent
+        #   parent.depth + 1
+        # else
+        #   0
+        # end
+        node = parent
+        i = 0
+        while node
+          i += 1
+          node = node.parent
+        end
+
+        i
+      end
+
       def match(request : RequestState) : RequestState?
         results = [] of MatchResult
 

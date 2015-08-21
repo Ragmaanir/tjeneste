@@ -59,6 +59,21 @@ module Tjeneste
         r as Route
       end
 
+      def traverse_depth_first(&callback : Node -> Nil)
+        fifo = [root]
+
+        while !fifo.empty?
+          node = fifo.shift
+          case node
+          when InnerNode
+            callback.call(node)
+            fifo = node.children + fifo
+          when TerminalNode
+            callback.call(node)
+          end
+        end
+      end
+
     end
   end
 end

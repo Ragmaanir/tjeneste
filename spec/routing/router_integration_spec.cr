@@ -30,4 +30,22 @@ describe Tjeneste::Routing::Router do
 
     assert results == ["create", "show"]
   end
+
+  # it "" do
+  #   class MyEndpoint
+  #     def call(context : Tjeneste::Routing::HttpContext)
+  #     end
+  #   end
+
+  #   router = Tjeneste::Routing::RouterBuilder.build do |r|
+  #     r.path "backend" do |r|
+  #       r.path "topics" do |r|
+  #         get :int, MyEndpoint
+  #       end
+  #     end
+  #   end
+
+  #   req = HTTP::Request.new("GET", "backend/topics/1337")
+  #   route = router.route!(req)
+  # end
 end
