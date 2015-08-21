@@ -2,14 +2,15 @@ require "../spec_helper"
 
 describe Tjeneste::Routing::Router do
 
-  NODE = Tjeneste::Routing::Node
+  INode = Tjeneste::Routing::InnerNode
+  TNode = Tjeneste::Routing::TerminalNode
   PathMatcher = Tjeneste::Routing::PathMatcher
   VerbMatcher = Tjeneste::Routing::VerbMatcher
 
   it "" do
-    root = NODE.new(matchers: [PathMatcher.new("/")], children: [
-      NODE.new(matchers: [PathMatcher.new("users")]),
-      NODE.new(matchers: [PathMatcher.new("topics")])
+    root = INode.new(matchers: [PathMatcher.new("/")], children: [
+      TNode.new(matchers: [PathMatcher.new("users")]),
+      TNode.new(matchers: [PathMatcher.new("topics")])
     ])
     router = Tjeneste::Routing::Router.new(root)
 
@@ -30,10 +31,10 @@ describe Tjeneste::Routing::Router do
   end
 
   it "matches nested paths" do
-    root = NODE.new(children: [
-      NODE.new(matchers: [PathMatcher.new("users/")], children: [
-        NODE.new(matchers: [PathMatcher.new("special/")], children: [
-          NODE.new(matchers: [PathMatcher.new(:int)])
+    root = INode.new(children: [
+      INode.new(matchers: [PathMatcher.new("users/")], children: [
+        INode.new(matchers: [PathMatcher.new("special/")], children: [
+          TNode.new(matchers: [PathMatcher.new(:int)])
         ])
       ])
     ])
@@ -47,8 +48,13 @@ describe Tjeneste::Routing::Router do
   end
 
   it "matches HTTP verbs" do
-    root = NODE.new(children: [
-      NODE.new(matchers: [PathMatcher.new("users/"), VerbMatcher.new(Tjeneste::Routing::Verb::POST)])
+    root = INode.new(children: [
+      TNode.new(
+        matchers: [
+          PathMatcher.new("users/"),
+          VerbMatcher.new(Tjeneste::Routing::Verb::POST)
+        ]
+      )
     ])
     router = Tjeneste::Routing::Router.new(root)
 

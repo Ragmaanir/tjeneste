@@ -1,22 +1,14 @@
 module Tjeneste
   module Routing
-    class Node
+    abstract class Node
       property :parent
-      getter :children, :matchers, :action
+      getter :matchers
 
-      def initialize(
-        @matchers = [] of Matcher,
-        @children = [] of Node,
-        @action = nil : (HttpContext -> Nil)?)
-        @children.each{ |c| c.parent = self }
+      def initialize(@matchers = [] of Matcher)
       end
 
       def root?
         parent == nil
-      end
-
-      def leaf?
-        children.empty?
       end
 
       def match(request : RequestState) : RequestState?
@@ -38,7 +30,42 @@ module Tjeneste
       end
 
       def ==(other : Node)
-        matchers == other.matchers && children == other.children
+        matchers == other.matchers
+      end
+    end
+
+    class InnerNode < Node
+      getter :children
+
+      def initialize(
+        @matchers = [] of Matcher,
+        @children = [] of Node)
+        @children.each{ |c| c.parent = self }
+      end
+
+      def ==(other : InnerNode)
+        super && children == other.children
+      end
+
+      def ==(other : Node)
+        false
+      end
+    end
+
+    class TerminalNode < Node
+      getter :action
+
+      def initialize(
+        @matchers = [] of Matcher,
+        @action = ->(_ctx : HttpContext){ raise "Action missing" } : (HttpContext -> Nil))
+      end
+
+      def ==(other : TerminalNode)
+        super && action == other.action
+      end
+
+      def ==(other : Node)
+        false
       end
     end
   end

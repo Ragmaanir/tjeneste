@@ -17,7 +17,7 @@ module Tjeneste
       def initialize(root_node : Node, @logger = Logger.new(STDOUT) : Logger)
         # The root nodes matchers are not checked in #route, therefore
         # the passed root node has to be wrapped.
-        @internal_root = Node.new(children: [root_node])
+        @internal_root = InnerNode.new(children: [root_node])
       end
 
       def root
@@ -29,22 +29,28 @@ module Tjeneste
         node_path = [] of Node
         req = RequestState.new(request)
 
-        while !node.leaf?
-          next_node = node.children.find do |c|
-            if res = c.match(req)
-              req = res
+        while true
+          case node
+          when TerminalNode
+            leaf = node as TerminalNode
+            return Route.new(node_path, leaf.action)
+          when InnerNode
+            inner = node as InnerNode
+            next_node = inner.children.find do |c|
+              if res = c.match(req)
+                req = res
+              end
             end
-          end
 
-          if next_node
-            node = next_node
-            node_path << node
-          else
-            break
+            if next_node
+              node_path << next_node
+              node = next_node
+            else
+              return
+            end
+          else raise "Unknown node type"
           end
         end
-
-        Route.new(node_path, node.action) if node.leaf?
       end
 
       def route!(request) : Route

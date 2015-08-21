@@ -18,7 +18,7 @@ module Tjeneste
         def path(name, &block : NodeBuilder -> Nil) : Nil
           children = NodeBuilder.build(block)
 
-          @result << Node.new(
+          @result << InnerNode.new(
             matchers: [PathMatcher.new("#{name}/")],
             children: children
           )
@@ -34,7 +34,7 @@ module Tjeneste
         end
 
         private def action(verb : Verb, name, block : HttpContext -> Nil) : Nil
-          node = Node.new(
+          node = TerminalNode.new(
             matchers: [PathMatcher.new(name), VerbMatcher.new(verb)],
             action: block
           )
@@ -52,7 +52,7 @@ module Tjeneste
 
       def initialize(block : NodeBuilder -> Nil)
         children = NodeBuilder.build(block)
-        root_node = Node.new(
+        root_node = InnerNode.new(
           children: children
         )
         @result = Router.new(root_node)

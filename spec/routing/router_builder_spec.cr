@@ -2,7 +2,8 @@ require "./../spec_helper"
 
 describe Tjeneste::Routing::RouterBuilder do
 
-  Node = Tjeneste::Routing::Node
+  InnerNode = Tjeneste::Routing::InnerNode
+  TerminalNode = Tjeneste::Routing::TerminalNode
 
   it "" do
     action = ->(ctx : Tjeneste::Routing::HttpContext){ puts "show"; nil }
@@ -16,12 +17,12 @@ describe Tjeneste::Routing::RouterBuilder do
     assert router
     assert router.is_a?(Tjeneste::Routing::Router)
 
-    routing_tree = Node.new(
+    routing_tree = InnerNode.new(
       children: [
-        Node.new(
+        InnerNode.new(
           matchers: [Tjeneste::Routing::PathMatcher.new("users/")],
           children: [
-            Node.new(
+            TerminalNode.new(
               matchers: [
                 Tjeneste::Routing::PathMatcher.new(""),
                 Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET)
