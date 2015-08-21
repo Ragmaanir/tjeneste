@@ -1,6 +1,6 @@
 require "logger"
 
-require "./tjeneste/*"
+require "./tjeneste/**"
 
 module Tjeneste
   # TODO Put your code here

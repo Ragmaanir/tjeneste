@@ -1,25 +1,25 @@
-require "./spec_helper"
+require "../spec_helper"
 
-describe Tjeneste::Router do
+describe Tjeneste::Routing::Router do
 
-  NODE = Tjeneste::Router::Node
-  PathMatcher = Tjeneste::Router::PathMatcher
-  VerbMatcher = Tjeneste::Router::VerbMatcher
+  NODE = Tjeneste::Routing::Node
+  PathMatcher = Tjeneste::Routing::PathMatcher
+  VerbMatcher = Tjeneste::Routing::VerbMatcher
 
   it "" do
     root = NODE.new(matchers: [PathMatcher.new("/")], children: [
       NODE.new(matchers: [PathMatcher.new("users")]),
       NODE.new(matchers: [PathMatcher.new("topics")])
     ])
-    router = Tjeneste::Router.new(root)
+    router = Tjeneste::Routing::Router.new(root)
 
     req = HTTP::Request.new("GET", "users")
 
     route = router.route(req)
-    
+
     case route
     when nil then fail("route was nil")
-    when Tjeneste::Router::Route then assert route.path == [root, root.children.first]
+    when Tjeneste::Routing::Route then assert route.path == [root, root.children.first]
     end
 
     req = HTTP::Request.new("GET", "not_found")
@@ -37,7 +37,7 @@ describe Tjeneste::Router do
         ])
       ])
     ])
-    router = Tjeneste::Router.new(root)
+    router = Tjeneste::Routing::Router.new(root)
 
     req = HTTP::Request.new("GET", "users/special/1")
 
@@ -48,9 +48,9 @@ describe Tjeneste::Router do
 
   it "matches HTTP verbs" do
     root = NODE.new(matchers: [PathMatcher.new("/")], children: [
-      NODE.new(matchers: [PathMatcher.new("users/"), VerbMatcher.new(Tjeneste::Router::Verb::POST)])
+      NODE.new(matchers: [PathMatcher.new("users/"), VerbMatcher.new(Tjeneste::Routing::Verb::POST)])
     ])
-    router = Tjeneste::Router.new(root)
+    router = Tjeneste::Routing::Router.new(root)
 
     req = HTTP::Request.new("POST", "users/special/1")
 
