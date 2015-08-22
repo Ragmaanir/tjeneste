@@ -26,12 +26,7 @@ module Tjeneste
       end
 
       def match(request : RequestState)
-        case @matcher
-          when String then match_internally(@matcher as String, request)
-          when Regex then match_internally(@matcher as Regex, request)
-          when Symbol then match_internally(@matcher as Symbol, request)
-          else raise "Unhandled matcher type #{@matcher.class}"
-        end
+        match_internally(@matcher, request)
       end
 
       private def match_internally(matcher : String, request : RequestState) : MatchResult

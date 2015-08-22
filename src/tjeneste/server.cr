@@ -1,4 +1,5 @@
 require "http/server"
+require "logger"
 
 module Tjeneste
   class Server
