@@ -1,7 +1,7 @@
 require "./spec_helper"
 
 describe Tjeneste::EventSystem do
-  it "" do
+  it "notifies subscribers" do
     subscriber_called = false
 
     Tjeneste::EventSystem::Global.subscribe(Tjeneste::EventSystem, "test") do |cls, name, event|

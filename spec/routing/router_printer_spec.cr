@@ -2,7 +2,7 @@ require "../spec_helper"
 
 describe Tjeneste::Routing::RouterPrinter do
 
-  it "" do
+  it "prints multiple nodes as a tree" do
     root = InnerNode.new(children: [
       TerminalNode.new(
         matchers: [

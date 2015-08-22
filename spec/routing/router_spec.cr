@@ -2,7 +2,7 @@ require "../spec_helper"
 
 describe Tjeneste::Routing::Router do
 
-  it "" do
+  it "returns routes when routing is successful" do
     root = InnerNode.new(matchers: [PathMatcher.new("/")], children: [
       TerminalNode.new(matchers: [PathMatcher.new("users")]),
       TerminalNode.new(matchers: [PathMatcher.new("topics")])
@@ -11,12 +11,9 @@ describe Tjeneste::Routing::Router do
 
     req = HTTP::Request.new("GET", "/users")
 
-    route = router.route(req)
+    route = router.route!(req)
 
-    case route
-    when nil then fail("route was nil")
-    when Tjeneste::Routing::Route then assert route.path == [root, root.children.first]
-    end
+    assert route.path == [root, root.children.first]
 
     req = HTTP::Request.new("GET", "not_found")
 

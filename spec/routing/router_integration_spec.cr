@@ -1,7 +1,7 @@
 require "../spec_helper"
 
 describe Tjeneste::Routing::Router do
-  it "" do
+  it "routes requests to the associated actions" do
     results = [] of String
     router = Tjeneste::Routing::RouterBuilder.build do |r|
       r.path "topics" do |r|

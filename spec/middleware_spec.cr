@@ -1,7 +1,7 @@
 require "./spec_helper"
 
 describe Tjeneste::Middleware do
-  it "" do
+  it "responds with 404 when no middleware is chained" do
     mid = Tjeneste::TimingMiddleware.new
 
     req = HTTP::Request.new("GET", "/")
