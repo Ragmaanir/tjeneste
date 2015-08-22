@@ -25,13 +25,11 @@ module Tjeneste
           nil
         end
 
-        def get(name, block : HttpContext -> Nil) : Nil
-          action(Verb::GET, name, block)
-        end
-
-        def post(name, block : HttpContext -> Nil) : Nil
-          action(Verb::POST, name, block)
-        end
+        {% for verb in Verb.constants %}
+          def {{verb.id.downcase}}(name, block : HttpContext -> Nil) : Nil
+            action(Verb::{{verb.id}}, name, block)
+          end
+        {% end %}
 
         private def action(verb : Verb, name, block : HttpContext -> Nil) : Nil
           node = TerminalNode.new(
