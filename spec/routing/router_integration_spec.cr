@@ -16,7 +16,7 @@ describe Tjeneste::Routing::Router do
     route = router.route!(req)
 
     ctx = Tjeneste::Routing::HttpContext.new(req)
-    (route.action as Tjeneste::Routing::HttpContext -> Nil).call(ctx)
+    route.action.call(ctx)
 
     assert results == ["create"]
 
@@ -26,7 +26,7 @@ describe Tjeneste::Routing::Router do
     route = router.route!(req)
 
     ctx = Tjeneste::Routing::HttpContext.new(req)
-    (route.action as Tjeneste::Routing::HttpContext -> Nil).call(ctx)
+    route.action.call(ctx)
 
     assert results == ["create", "show"]
   end
