@@ -6,7 +6,7 @@ describe Tjeneste::Routing::RouterBuilder do
   TerminalNode = Tjeneste::Routing::TerminalNode
 
   it "generates nested routes with appropriate matchers" do
-    action = ->(ctx : Tjeneste::Routing::HttpContext){ puts "show"; nil }
+    action = ->(ctx : HTTP::Request) { puts "show"; HTTP::Response.new(302) }
 
     router = Tjeneste::Routing::RouterBuilder.build do |r|
       r.path("users") do |r|

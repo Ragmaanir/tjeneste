@@ -5,8 +5,8 @@ describe Tjeneste::Routing::Router do
     results = [] of String
     router = Tjeneste::Routing::RouterBuilder.build do |r|
       r.path "topics" do |r|
-        r.post "", ->(_ctx : Tjeneste::Routing::HttpContext) { results << "create"; nil }
-        r.get :int, ->(_ctx : Tjeneste::Routing::HttpContext) { results << "show"; nil }
+        r.post "", ->(_ctx : HTTP::Request) { results << "create"; HTTP::Response.new(200) }
+        r.get :int, ->(_ctx : HTTP::Request) { results << "show"; HTTP::Response.new(200) }
       end
     end
 
@@ -15,8 +15,7 @@ describe Tjeneste::Routing::Router do
 
     route = router.route!(req)
 
-    ctx = Tjeneste::Routing::HttpContext.new(req)
-    route.action.call(ctx)
+    route.action.call(req)
 
     assert results == ["create"]
 
@@ -25,27 +24,34 @@ describe Tjeneste::Routing::Router do
 
     route = router.route!(req)
 
-    ctx = Tjeneste::Routing::HttpContext.new(req)
-    route.action.call(ctx)
+    route.action.call(req)
 
     assert results == ["create", "show"]
   end
+end
 
-  # it "" do
-  #   class MyEndpoint
-  #     def call(context : Tjeneste::Routing::HttpContext)
-  #     end
-  #   end
+module Spec1
 
-  #   router = Tjeneste::Routing::RouterBuilder.build do |r|
-  #     r.path "backend" do |r|
-  #       r.path "topics" do |r|
-  #         get :int, MyEndpoint
-  #       end
-  #     end
-  #   end
+  class MyEndpoint
+    def call(req : HTTP::Request)
+      HTTP::Response.new(200, "MyEndpoint")
+    end
+  end
 
-  #   req = HTTP::Request.new("GET", "backend/topics/1337")
-  #   route = router.route!(req)
-  # end
+  describe Spec1 do
+    it "" do
+      router = Tjeneste::Routing::RouterBuilder.build do |r|
+        r.path "backend" do |r|
+          r.path "topics" do |r|
+            #r.get :int, endpoint(Resp, :show)
+            r.get :int, MyEndpoint
+          end
+        end
+      end
+
+      req = HTTP::Request.new("GET", "backend/topics/1337")
+      route = router.route!(req)
+      assert route.action.call(req).body == "MyEndpoint"
+    end
+  end
 end

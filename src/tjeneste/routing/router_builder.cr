@@ -1,18 +1,25 @@
 module Tjeneste
   module Routing
+
+    alias Action = (HTTP::Request -> HTTP::Response)
+
     class RouterBuilder
 
       # Actually builds just the array of children and returns them as :result
       class NodeBuilder
+        macro endpoint(cls, meth)
+          ->(req : HTTP::Request){ {{cls}}.new.{{meth.id}}(req) }
+        end
+
         getter :result
 
         def self.build(block : NodeBuilder -> Nil)
-          new(block).result
+          new(&block).result
         end
 
-        def initialize(block : NodeBuilder -> Nil)
+        def initialize(&block : NodeBuilder -> Nil)
           @result = [] of Node
-          block.call(self)
+          with self yield(self)
         end
 
         def path(name, &block : NodeBuilder -> Nil) : Nil
@@ -26,15 +33,21 @@ module Tjeneste
         end
 
         {% for verb in Verb.constants %}
-          def {{verb.id.downcase}}(name, block : HttpContext -> Nil) : Nil
-            action(Verb::{{verb.id}}, name, block)
+          def {{verb.id.downcase}}(name, target : Action) : Nil
+            action(Verb::{{verb.id}}, name, target)
           end
         {% end %}
 
-        private def action(verb : Verb, name, block : HttpContext -> Nil) : Nil
+        {% for verb in Verb.constants %}
+          def {{verb.id.downcase}}(name, target : T, *args) : Nil
+            action(Verb::{{verb.id}}, name, ->(req : HTTP::Request){ target.new(*args).call(req) })
+          end
+        {% end %}
+
+        private def action(verb : Verb, name, target : Action) : Nil
           node = TerminalNode.new(
             matchers: [PathMatcher.new(name), VerbMatcher.new(verb)],
-            action: block
+            action: target
           )
           @result << node
           nil

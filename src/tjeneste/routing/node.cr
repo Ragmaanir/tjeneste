@@ -69,11 +69,15 @@ module Tjeneste
     end
 
     class TerminalNode < Node
+      MissingAction = ->(req : HTTP::Request) {
+        HTTP::Response.new(404)
+      }
+
       getter :action
 
       def initialize(
         @matchers = [] of Matcher,
-        @action = ->(_ctx : HttpContext){ raise "Action missing" } : (HttpContext -> Nil))
+        @action = MissingAction : Action)
       end
 
       def ==(other : TerminalNode)
