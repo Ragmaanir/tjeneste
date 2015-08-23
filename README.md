@@ -1,6 +1,6 @@
 # tjeneste
 
-TODO: Write a description here for library
+Very simple web-framework.
 
 ## Installation
 
@@ -8,7 +8,7 @@ Add it to `Projectfile`
 
 ```crystal
 deps do
-  github "[your-github-name]/tjeneste"
+  github "ragmaanir/tjeneste"
 end
 ```
 
@@ -24,9 +24,17 @@ TODO: Write usage here for library
 
 TODO: Write instructions for development
 
+## TODO
+
+- controllers
+- route helpers
+- response generation helpers
+- simple json generation helpers
+- instrumentation/events
+
 ## Contributing
 
-1. Fork it ( https://github.com/[your-github-name]/tjeneste/fork )
+1. Fork it ( https://github.com/ragmaanir/tjeneste/fork )
 2. Create your feature branch (git checkout -b my-new-feature)
 3. Commit your changes (git commit -am 'Add some feature')
 4. Push to the branch (git push origin my-new-feature)
@@ -34,4 +42,4 @@ TODO: Write instructions for development
 
 ## Contributors
 
-- [your-github-name](https://github.com/[your-github-name]) ragmaanir - creator, maintainer
+- [ragmaanir](https://github.com/ragmaanir) ragmaanir - creator, maintainer
