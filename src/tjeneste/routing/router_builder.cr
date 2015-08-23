@@ -30,16 +30,15 @@ module Tjeneste
         end
 
         {% for verb in Verb.constants %}
-          def {{verb.id.downcase}}(name, target : Action) : Nil
-            action(Verb::{{verb.id}}, name, target)
+          def {{verb.id.downcase}}(name, target : T, *args) : Nil
+            action(Verb::{{verb.id}}, name, target, *args)
           end
         {% end %}
 
-        {% for verb in Verb.constants %}
-          def {{verb.id.downcase}}(name, target : T, *args) : Nil
-            action(Verb::{{verb.id}}, name, ->(req : HTTP::Request){ target.new(*args).call(req) })
-          end
-        {% end %}
+        private def action(verb : Verb, name, target : T, *args) : Nil
+          wrapper = ->(req : HTTP::Request){ target.new(*args).call(req) }
+          action(verb, name, wrapper)
+        end
 
         private def action(verb : Verb, name, target : Action) : Nil
           node = TerminalNode.new(
@@ -49,6 +48,7 @@ module Tjeneste
           @result << node
           nil
         end
+
       end
 
       def self.build(&block : NodeBuilder -> Nil) : Router
