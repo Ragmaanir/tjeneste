@@ -43,7 +43,6 @@ module Spec1
       router = Tjeneste::Routing::RouterBuilder.build do |r|
         r.path "backend" do |r|
           r.path "topics" do |r|
-            #r.get :int, endpoint(Resp, :show)
             r.get :int, MyEndpoint
           end
         end

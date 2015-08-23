@@ -7,9 +7,6 @@ module Tjeneste
 
       # Actually builds just the array of children and returns them as :result
       class NodeBuilder
-        macro endpoint(cls, meth)
-          ->(req : HTTP::Request){ {{cls}}.new.{{meth.id}}(req) }
-        end
 
         getter :result
 
