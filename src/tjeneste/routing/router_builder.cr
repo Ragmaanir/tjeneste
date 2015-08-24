@@ -41,11 +41,19 @@ module Tjeneste
         end
 
         private def action(verb : Verb, name, target : Action) : Nil
-          node = TerminalNode.new(
+          @result << TerminalNode.new(
             matchers: [PathMatcher.new(name), VerbMatcher.new(verb)],
             action: target
           )
-          @result << node
+          nil
+        end
+
+        def mount(name, middleware, *args) : Nil
+          wrapper = ->(req : HTTP::Request){ middleware.new(*args).call(req) }
+          @result << TerminalNode.new(
+            matchers: [PathMatcher.new(name)],
+            action: wrapper
+          )
           nil
         end
 

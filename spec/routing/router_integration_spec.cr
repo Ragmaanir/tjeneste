@@ -30,7 +30,7 @@ describe Tjeneste::Routing::Router do
   end
 end
 
-module Spec1
+module MountEndpoint
 
   class MyEndpoint
     def call(req : HTTP::Request)
@@ -38,7 +38,7 @@ module Spec1
     end
   end
 
-  describe Spec1 do
+  describe MountEndpoint do
     it "" do
       router = Tjeneste::Routing::RouterBuilder.build do |r|
         r.path "backend" do |r|
@@ -51,6 +51,32 @@ module Spec1
       req = HTTP::Request.new("GET", "backend/topics/1337")
       route = router.route!(req)
       assert route.action.call(req).body == "MyEndpoint"
+    end
+  end
+end
+
+module MountMiddleware
+
+  class MyMiddleware
+    def initialize(@param)
+    end
+
+    def call(req : HTTP::Request)
+      HTTP::Response.new(200, "#{req.path}, #{req.method}, #{@param}")
+    end
+  end
+
+  describe MountMiddleware do
+    it "gets called with any method and any remaining path" do
+      router = Tjeneste::Routing::RouterBuilder.build do |r|
+        r.path "topics" do |r|
+          r.mount "all", MyMiddleware, "some_param"
+        end
+      end
+
+      req = HTTP::Request.new("XYZ", "topics/all/extra_path")
+      route = router.route!(req)
+      assert route.action.call(req).body == "topics/all/extra_path, XYZ, some_param"
     end
   end
 end
