@@ -11,7 +11,7 @@ describe Tjeneste::Routing::Router do
     end
 
     # req 1
-    req = HTTP::Request.new("POST", "topics/")
+    req = HTTP::Request.new("POST", "/topics/")
 
     route = router.route!(req)
 
@@ -20,7 +20,7 @@ describe Tjeneste::Routing::Router do
     assert results == ["create"]
 
     # req 2
-    req = HTTP::Request.new("GET", "topics/1")
+    req = HTTP::Request.new("GET", "/topics/1")
 
     route = router.route!(req)
 
@@ -48,7 +48,7 @@ module MountEndpoint
         end
       end
 
-      req = HTTP::Request.new("GET", "backend/topics/1337")
+      req = HTTP::Request.new("GET", "/backend/topics/1337")
       route = router.route!(req)
       assert route.action.call(req).body == "MyEndpoint"
     end
@@ -74,9 +74,9 @@ module MountMiddleware
         end
       end
 
-      req = HTTP::Request.new("XYZ", "topics/all/extra_path")
+      req = HTTP::Request.new("XYZ", "/topics/all/extra_path")
       route = router.route!(req)
-      assert route.action.call(req).body == "topics/all/extra_path, XYZ, some_param"
+      assert route.action.call(req).body == "/topics/all/extra_path, XYZ, some_param"
     end
   end
 end

@@ -21,7 +21,7 @@ module Tjeneste
     include Timeable
 
     class RequestTimingEvent < EventSystem::Event
-      getter :request
+      getter :request, :timing
 
       def initialize(@timing, @request)
       end
@@ -42,18 +42,18 @@ module Tjeneste
     end
   end
 
-  class RoutingMiddleware
+  class RoutingMiddleware < Middleware
     getter :router
 
     def initialize(@router : Routing::Router)
     end
 
-    def call(req)
+    def call(req : HTTP::Request) : HTTP::Response
       route = router.route!(req)
 
-      ctx = Routing::HttpContext.new(req)
-
-      route.action.call(ctx)
+      route.action.call(req)
+    rescue
+      HTTP::Response.not_found
     end
   end
 

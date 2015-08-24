@@ -1,3 +1,5 @@
+require "./event_system"
+
 module Tjeneste
   module Timeable
     class TimingEvent < EventSystem::Event

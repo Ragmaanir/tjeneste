@@ -23,16 +23,19 @@ describe Tjeneste::Routing::Router do
   end
 
   it "matches nested paths" do
-    root = InnerNode.new(children: [
-      InnerNode.new(matchers: [PathMatcher.new("users/")], children: [
-        InnerNode.new(matchers: [PathMatcher.new("special/")], children: [
-          TerminalNode.new(matchers: [PathMatcher.new(:int)])
+    root = InnerNode.new(
+      matchers: [PathMatcher.new("/")],
+      children: [
+        InnerNode.new(matchers: [PathMatcher.new("users/")], children: [
+          InnerNode.new(matchers: [PathMatcher.new("special/")], children: [
+            TerminalNode.new(matchers: [PathMatcher.new(:int)])
+          ])
         ])
-      ])
-    ])
+      ]
+    )
     router = Tjeneste::Routing::Router.new(root)
 
-    req = HTTP::Request.new("GET", "users/special/1")
+    req = HTTP::Request.new("GET", "/users/special/1")
 
     route = router.route(req)
 
@@ -40,24 +43,27 @@ describe Tjeneste::Routing::Router do
   end
 
   it "matches HTTP verbs" do
-    root = InnerNode.new(children: [
-      TerminalNode.new(
-        matchers: [
-          PathMatcher.new("users/"),
-          VerbMatcher.new(Tjeneste::Routing::Verb::POST)
-        ]
-      )
-    ])
+    root = InnerNode.new(
+      matchers: [PathMatcher.new("/")],
+      children: [
+        TerminalNode.new(
+          matchers: [
+            PathMatcher.new("users/"),
+            VerbMatcher.new(Tjeneste::Routing::Verb::POST)
+          ]
+        )
+      ]
+    )
     router = Tjeneste::Routing::Router.new(root)
 
-    req = HTTP::Request.new("POST", "users/special/1")
+    req = HTTP::Request.new("POST", "/users/special/1")
 
     route = router.route(req)
 
     assert route
 
     #
-    req = HTTP::Request.new("GET", "users/special/1")
+    req = HTTP::Request.new("GET", "/users/special/1")
 
     route = router.route(req)
 

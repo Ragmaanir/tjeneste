@@ -24,7 +24,7 @@ module Tjeneste
         @internal_root.children.first
       end
 
-      def route(request) : Route?
+      def route(request : HTTP::Request) : Route?
         node = @internal_root
         node_path = [] of Node
         req = RequestState.new(request)
@@ -53,10 +53,12 @@ module Tjeneste
         end
       end
 
-      def route!(request) : Route
-        r = route(request)
-        raise NoRouteFoundException.new(request) unless r
-        r as Route
+      def route!(request : HTTP::Request) # FIXME type : Route
+        if r = route(request)
+          r as Route
+        else
+          raise NoRouteFoundException.new(request)
+        end
       end
 
       def traverse_depth_first(&callback : Node -> Nil)
