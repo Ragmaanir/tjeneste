@@ -1,7 +1,8 @@
-require "spec"
+#require "spec"
 require "power_assert"
-require "mocks"
 
 require "../src/tjeneste"
+
+require "minitest/autorun"
 
 include Tjeneste::Routing

@@ -1,0 +1,16 @@
+name: shards
+version: 0.1.0
+authors:
+  - Ragmaanir <ragmaanir@gmail.com>
+
+#dependencies:
+
+development_dependencies:
+  minitest:
+    github: ysbaddaden/minitest.cr
+    version: ~> 0.1.5
+  power_assert:
+    github: rosylilly/power_assert.cr
+    version: ~> 0.2.2
+
+license: MIT

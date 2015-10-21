@@ -2,15 +2,20 @@ require "./spec_helper"
 
 describe Tjeneste::Middleware do
   it "responds with 404 when no middleware is chained" do
-    mid = Tjeneste::TimingMiddleware.new
+    # mid = Tjeneste::TimingMiddleware(Tjeneste::TimingMiddleware::Context -> HTTP::Response).new(
+    #   ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
+    # )
+    endpoint = ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
+    mid = Tjeneste::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
 
     req = HTTP::Request.new("GET", "/")
 
-    assert mid.call(req).status_code == 404
+    assert mid.call(Tjeneste::HttpContext.new(req)).status_code == 404
   end
 
   it "fires a global timing event" do
-    mid = Tjeneste::TimingMiddleware.new
+    endpoint = ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
+    mid = Tjeneste::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
 
     req = HTTP::Request.new("GET", "/")
 
@@ -20,7 +25,7 @@ describe Tjeneste::Middleware do
       subscriber_notified = true
     end
 
-    mid.call(req)
+    mid.call(Tjeneste::HttpContext.new(req))
 
     assert subscriber_notified
   end

@@ -11,7 +11,7 @@ module Tjeneste
       end
 
       def path
-        request.path[path_index..-1]
+        (request.path || "")[path_index..-1]
       end
     end
   end

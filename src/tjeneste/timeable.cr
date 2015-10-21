@@ -2,22 +2,10 @@ require "./event_system"
 
 module Tjeneste
   module Timeable
-    class TimingEvent < EventSystem::Event
-      getter :timing
-
-      def initialize(@timing)
-      end
-
-      def to_s
-        "#{timing.start} (#{timing.milliseconds}ms)"
-      end
-    end
-
     class Timing
-      getter :start, :stop
+      getter :timespan, :start, :stop
 
-      # FIXME BUG segfault
-      #forward_missing_to timespan
+      forward_missing_to timespan
 
       def initialize(@start, @stop)
         @timespan = stop - start
@@ -25,6 +13,18 @@ module Tjeneste
 
       def milliseconds
         @timespan.milliseconds
+      end
+    end
+
+    class TimingEvent < EventSystem::Event
+      @timing :: Timing
+      getter :timing
+
+      def initialize(@timing)
+      end
+
+      def to_s
+        "#{timing.start} (#{timing.milliseconds}ms)"
       end
     end
 

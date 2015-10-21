@@ -53,7 +53,7 @@ module Tjeneste
         end
       end
 
-      def route!(request : HTTP::Request) # FIXME type : Route
+      def route!(request : HTTP::Request) : Route
         if r = route(request)
           r as Route
         else

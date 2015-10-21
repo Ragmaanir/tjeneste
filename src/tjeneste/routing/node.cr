@@ -41,9 +41,7 @@ module Tjeneste
         request if all_match
       end
 
-      def to_s
-       "Node(matchers: #{matchers}, children: [#{children.map{ |c| c.to_s as String }.join(",")}])"
-      end
+      abstract def to_s : String
 
       def ==(other : Node)
         matchers == other.matchers
@@ -65,6 +63,10 @@ module Tjeneste
 
       def ==(other : Node)
         false
+      end
+
+      def to_s
+       "Node(matchers: #{matchers}, children: [#{children.map{ |c| c.to_s as String }.join(",")}])"
       end
     end
 

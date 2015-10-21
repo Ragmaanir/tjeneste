@@ -6,6 +6,10 @@ module Tjeneste
     property :logger
     getter :port, :server
 
+    def self.new(*args, &callback : HTTP::Request -> HTTP::Response)
+      new(*args, callback)
+    end
+
     def initialize(@port : Int32, @logger = Logger.new(STDOUT) : Logger, callback = ->(_req){ HTTP::Response.not_found } : HTTP::Request -> HTTP::Response )
       @server = HTTP::Server.new(@port) do |req|
         callback.call(req)

@@ -31,7 +31,7 @@ module Tjeneste
 
       private def match_internally(matcher : String, request : RequestState) : MatchResult
         if request.path.starts_with?(matcher)
-          MatchSuccess.new(RequestState.new(request, request.path_index + matcher.length))
+          MatchSuccess.new(RequestState.new(request, request.path_index + matcher.size))
         else
           MatchFailure.new("#{matcher} != #{request.path}")
         end
@@ -48,7 +48,7 @@ module Tjeneste
       private def match_internally(matcher : Symbol, request : RequestState) : MatchResult
         predef = PREDEFINED_MATCHERS[matcher]
         if m = predef.match(request.path)
-          MatchSuccess.new(RequestState.new(request, request.path_index + m.length))
+          MatchSuccess.new(RequestState.new(request, request.path_index + m.size))
         else
           MatchFailure.new("#{predef.source} != #{request.path}")
         end
