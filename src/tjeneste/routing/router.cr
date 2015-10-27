@@ -12,7 +12,7 @@ module Tjeneste
         end
       end
 
-      getter :logger
+      getter logger
 
       def initialize(root_node : Node, @logger = Logger.new(STDOUT) : Logger)
         # The root nodes matchers are not checked in #route, therefore
@@ -55,7 +55,7 @@ module Tjeneste
 
       def route!(request : HTTP::Request) : Route
         if r = route(request)
-          r as Route
+          r
         else
           raise NoRouteFoundException.new(request)
         end

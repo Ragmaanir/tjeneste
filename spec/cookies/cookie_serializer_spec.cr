@@ -1,6 +1,6 @@
 require "../spec_helper"
 
-module CookiesSpec
+module Tjeneste_Tests
 
   class CookieSerializerTest < Minitest::Test
     private def cookie_request(value)

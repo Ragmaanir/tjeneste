@@ -3,6 +3,20 @@ require "./tjeneste"
 class TestApp < Tjeneste::Application
   include Tjeneste::MiddlewareBuilder
 
+  def initialize(*args)
+    super
+
+    Tjeneste::EventSystem::Global.subscribe(Tjeneste::TimingMiddleware, "timing") do |obj, name, event|
+      te = event as Tjeneste::TimingMiddleware::RequestTimingEvent
+      logger.info "#{te.timing.milliseconds}ms : #{te.response.status_code} : \t#{te.context.request.method} #{te.context.request.path}"
+    end
+
+    Tjeneste::EventSystem::Global.subscribe(Tjeneste::ExceptionMiddleware, "exception") do |obj, name, event|
+      ee = event as Tjeneste::ExceptionMiddleware::ExceptionEvent
+      logger.error "#{ee.exception.message} (#{ee.exception.backtrace.join("\n")})"
+    end
+  end
+
   def build_middleware
     router = Tjeneste::Routing::RouterBuilder.build do |r|
       r.get "status", ->(req : HTTP::Request) {
