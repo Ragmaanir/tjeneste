@@ -82,7 +82,7 @@ module Tjeneste
       end
     end
 
-    getter :router
+    getter router
 
     def initialize(@router : Routing::Router)
     end
@@ -102,12 +102,13 @@ module Tjeneste
 
     class Context # FIXME Context = C
       forward_missing_to original
+      getter original
 
       def initialize(@original : C)
       end
     end
 
-    getter :headers, :successor
+    getter headers, successor
 
     def initialize(@headers : Hash(String, String), @successor)
     end
@@ -122,109 +123,25 @@ module Tjeneste
   module MiddlewareBuilder
     macro define_middleware_stack(hash)
       {% classes = hash.to_a %}
-      {% for c, idx in classes %}
-        {% if idx == 0 %}
-          {{c[0]}}(Tjeneste::HttpContext).new(
-        {% elsif idx == classes.size - 1 %}
-          {{c[0]}}({{classes[idx-1][0]}}::Context).new(*{{c[1]}}
-        {% else %}
-          {{c[0]}}({{classes[idx-1][0]}}::Context).new(
-        {% end %}
+      nested_middleware_stack({{classes}}, 0)
+    end
+
+    macro nested_middleware_stack(array, i)
+      {% cls = array[i][0] %}
+      {% params = array[i][1] %}
+      {% if i == 0 %}
+        {% ctx = Tjeneste::HttpContext %}
+      {% else %}
+        {% ctx = array[i-1][0].id + "::Context" %}
       {% end %}
-      {% for c, idx in classes %}
-      )
+
+      {% if i == array.size - 1 %}
+        {{cls}}({{ctx}}).new(*{{params}})
+      {% else %}
+        {{cls}}({{ctx}}).new(*{{params}}, nested_middleware_stack({{array}}, {{i+1}}))
       {% end %}
     end
+
   end
 
 end
-
-
-# module Tjeneste
-#   abstract class Middleware
-#     getter :successor
-
-#     def initialize(@successor = nil)
-#     end
-
-#     def call(req : HTTP::Request) : HTTP::Response
-#       case s = successor
-#       when Middleware then s.call(req)
-#       when Proc(HTTP::Request, HTTP::Response) then s.call(req)
-#       when Nil then HTTP::Response.not_found
-#       else raise ArgumentError.new("Invalid middleware: #{s.inspect}")
-#       end
-#     end
-#   end
-
-#   class TimingMiddleware < Middleware
-#     include Timeable
-
-#     class RequestTimingEvent < EventSystem::Event
-#       @request :: HTTP::Request
-#       @response :: HTTP::Response
-#       @timing :: Timeable::Timing
-
-#       getter :request, :response, :timing
-
-#       def initialize(@timing, @request, @response)
-#       end
-#     end
-
-#     def call(req : HTTP::Request) : HTTP::Response
-#       response, timing = profile do
-#         super
-#       end
-
-#       EventSystem::Global.publish(self.class, "timing", RequestTimingEvent.new(timing, req, response))
-
-#       response
-#     end
-#   end
-
-#   class ExceptionMiddleware < Middleware
-
-#     class ExceptionEvent < EventSystem::Event
-#       getter :exception
-
-#       def initialize(@exception, @request : HTTP::Request)
-#       end
-#     end
-
-#     def call(request : HTTP::Request)
-#       super
-#     rescue e
-#       EventSystem::Global.publish(self.class, "exception", ExceptionEvent.new(e, request))
-#       HTTP::Response.new(500, "Internal Server Error")
-#     end
-#   end
-
-#   class RoutingMiddleware < Middleware
-#     getter :router
-
-#     def initialize(@router : Routing::Router)
-#     end
-
-#     def call(req : HTTP::Request) : HTTP::Response
-#       route = router.route!(req)
-
-#       route.action.call(req)
-#     rescue Routing::Router::NoRouteFoundException
-#       HTTP::Response.not_found
-#     end
-#   end
-
-#   class HeaderMiddleware < Middleware
-#     getter :headers
-
-#     def initialize(@headers = {} of String => String, @successor = nil)
-#     end
-
-#     def call(req : HTTP::Request)
-#       response = super
-#       response.headers.merge!(headers)
-#       response
-#     end
-#   end
-
-# end
