@@ -6,13 +6,13 @@ class TestApp < Tjeneste::Application
   def initialize(*args)
     super
 
-    Tjeneste::EventSystem::Global.subscribe(Tjeneste::TimingMiddleware, "timing") do |obj, name, event|
-      te = event as Tjeneste::TimingMiddleware::RequestTimingEvent
+    Tjeneste::EventSystem::Global.subscribe(Tjeneste::Middlewares::TimingMiddleware, "timing") do |obj, name, event|
+      te = event as Tjeneste::Middlewares::TimingMiddleware::RequestTimingEvent
       logger.info "#{te.timing.milliseconds}ms : #{te.response.status_code} : \t#{te.context.request.method} #{te.context.request.path}"
     end
 
-    Tjeneste::EventSystem::Global.subscribe(Tjeneste::ExceptionMiddleware, "exception") do |obj, name, event|
-      ee = event as Tjeneste::ExceptionMiddleware::ExceptionEvent
+    Tjeneste::EventSystem::Global.subscribe(Tjeneste::Middlewares::ExceptionMiddleware, "exception") do |obj, name, event|
+      ee = event as Tjeneste::Middlewares::ExceptionMiddleware::ExceptionEvent
       logger.error "#{ee.exception.message} (#{ee.exception.backtrace.join("\n")})"
     end
   end
@@ -39,11 +39,11 @@ class TestApp < Tjeneste::Application
     end
 
     define_middleware_stack({
-      Tjeneste::TimingMiddleware => Tuple.new(),
-      Tjeneste::ExceptionMiddleware => Tuple.new(),
-      Tjeneste::HeaderMiddleware => Tuple.new({"Content-Security-Policy" => "script-src 'self'"}),
-      Tjeneste::SessionMiddleware => Tuple.new("session_id"),
-      Tjeneste::RoutingEndpoint => Tuple.new(router)
+      Tjeneste::Middlewares::TimingMiddleware => Tuple.new(),
+      Tjeneste::Middlewares::ExceptionMiddleware => Tuple.new(),
+      Tjeneste::Middlewares::HeaderMiddleware => Tuple.new({"Content-Security-Policy" => "script-src 'self'"}),
+      Tjeneste::Middlewares::SessionMiddleware => Tuple.new("session_id"),
+      Tjeneste::Routing::RoutingEndpoint => Tuple.new(router)
     })
   end
 

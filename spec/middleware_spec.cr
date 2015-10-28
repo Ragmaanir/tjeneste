@@ -5,8 +5,8 @@ describe Tjeneste::Middleware do
     # mid = Tjeneste::TimingMiddleware(Tjeneste::TimingMiddleware::Context -> HTTP::Response).new(
     #   ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
     # )
-    endpoint = ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
-    mid = Tjeneste::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
+    endpoint = ->(c : Tjeneste::Middlewares::TimingMiddleware::Context){ HTTP::Response.not_found }
+    mid = Tjeneste::Middlewares::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
 
     req = HTTP::Request.new("GET", "/")
 
@@ -14,14 +14,14 @@ describe Tjeneste::Middleware do
   end
 
   it "fires a global timing event" do
-    endpoint = ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
-    mid = Tjeneste::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
+    endpoint = ->(c : Tjeneste::Middlewares::TimingMiddleware::Context){ HTTP::Response.not_found }
+    mid = Tjeneste::Middlewares::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
 
     req = HTTP::Request.new("GET", "/")
 
     subscriber_notified = false
 
-    Tjeneste::EventSystem::Global.subscribe(Tjeneste::TimingMiddleware, "timing") do |timing, req|
+    Tjeneste::EventSystem::Global.subscribe(Tjeneste::Middlewares::TimingMiddleware, "timing") do |timing, req|
       subscriber_notified = true
     end
 
