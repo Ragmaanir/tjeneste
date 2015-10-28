@@ -42,6 +42,7 @@ class TestApp < Tjeneste::Application
       Tjeneste::TimingMiddleware => Tuple.new(),
       Tjeneste::ExceptionMiddleware => Tuple.new(),
       Tjeneste::HeaderMiddleware => Tuple.new({"Content-Security-Policy" => "script-src 'self'"}),
+      Tjeneste::SessionMiddleware => Tuple.new("session_id"),
       Tjeneste::RoutingEndpoint => Tuple.new(router)
     })
   end
