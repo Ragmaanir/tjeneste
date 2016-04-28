@@ -1,14 +1,14 @@
 module Tjeneste
   module Routing
 
-    alias Action = (HTTP::Request -> HTTP::Response)
+    alias Action = (HTTP::Server::Context -> )
 
     class RouterBuilder
 
       # Actually builds just the array of children and returns them as :result
       class NodeBuilder
 
-        getter :result
+        getter result
 
         def self.build(block : NodeBuilder -> Nil)
           new(&block).result
@@ -35,11 +35,6 @@ module Tjeneste
           end
         {% end %}
 
-        private def action(verb : Verb, name, target : T, *args) : Nil
-          wrapper = ->(req : HTTP::Request){ target.new(*args).call(req) }
-          action(verb, name, wrapper)
-        end
-
         private def action(verb : Verb, name, target : Action) : Nil
           @result << TerminalNode.new(
             matchers: [PathMatcher.new(name), VerbMatcher.new(verb)],
@@ -48,8 +43,13 @@ module Tjeneste
           nil
         end
 
+        private def action(verb : Verb, name, target : T, *args) : Nil
+          wrapper = ->(ctx : HTTP::Server::Context){ target.new(*args).call(ctx) }
+          action(verb, name, wrapper)
+        end
+
         def mount(name, middleware, *args) : Nil
-          wrapper = ->(req : HTTP::Request){ middleware.new(*args).call(req) }
+          wrapper = ->(ctx : HTTP::Server::Context){ middleware.new(*args).call(ctx) }
           @result << TerminalNode.new(
             matchers: [PathMatcher.new(name)],
             action: wrapper
@@ -64,7 +64,7 @@ module Tjeneste
         router as Router
       end
 
-      getter :result
+      getter result
 
       def initialize(block : NodeBuilder -> Nil)
         children = NodeBuilder.build(block)

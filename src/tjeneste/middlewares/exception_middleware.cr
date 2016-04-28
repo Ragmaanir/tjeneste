@@ -3,7 +3,7 @@ module Tjeneste
     class ExceptionMiddleware(C) < Middleware
 
       class ExceptionEvent < EventSystem::Event
-        getter :exception
+        getter exception
 
         def initialize(@exception, @context : C)
         end
@@ -23,11 +23,13 @@ module Tjeneste
 
       getter successor
 
-      def call(context : C) : HTTP::Response
+      def call(context : C)
         successor.call(Context.new(context))
       rescue e
         EventSystem::Global.publish(ExceptionMiddleware, "exception", ExceptionEvent.new(e, context))
-        HTTP::Response.new(500, "Internal Server Error")
+        context.response.status_code = 500
+        context.response.puts "Internal Server Error"
+        context.response.close
       end
     end
   end

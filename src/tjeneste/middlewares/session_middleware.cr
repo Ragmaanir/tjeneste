@@ -18,12 +18,12 @@ module Tjeneste
       def initialize(@session_id_name : String, @successor)
       end
 
-      def call(context : C) : HTTP::Response
+      def call(context : C)
         ctx = Context.new(context, @session_id_name)
-        response = successor.call(ctx)
+        successor.call(ctx)
 
         if !ctx.session_id
-          response.cookies << HTTP::Cookie.new(
+          ctx.response.cookies << HTTP::Cookie.new(
             @session_id_name,
             generate_session_id,
             path: "/",
@@ -31,8 +31,6 @@ module Tjeneste
             http_only: true
           )
         end
-
-        response
       end
 
       private def generate_session_id

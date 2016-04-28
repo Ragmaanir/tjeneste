@@ -18,24 +18,34 @@ class TestApp < Tjeneste::Application
   end
 
   def build_middleware
+    # router = Tjeneste::Routing::RouterBuilder.build do |r|
+    #   r.get "status", ->(req : HTTP::Request) {
+    #     raise "Some error" if rand > 0.5
+    #     HTTP::Response.new(200, "100% Ok")
+    #   }
+    #   r.get "", ->(req : HTTP::Request) {
+    #     HTTP::Response.new 200, <<-HTML
+    #       <html>
+    #         <head>
+    #           <script src="https://google.de/xyz.js">
+    #           </script>
+    #         </head>
+    #         <body>
+    #           <em>#{rand.to_s}</em>
+    #         </body>
+    #       </html>
+    #     HTML
+    #   }
+    # end
+
     router = Tjeneste::Routing::RouterBuilder.build do |r|
-      r.get "status", ->(req : HTTP::Request) {
+      r.get "status", ->(ctx : HTTP::Server::Context) {
         raise "Some error" if rand > 0.5
-        HTTP::Response.new(200, "100% Ok")
+        ctx.response.status_code = 200
+        ctx.response.puts "OK"
+        ctx.response.close
       }
-      r.get "", ->(req : HTTP::Request) {
-        HTTP::Response.new 200, <<-HTML
-          <html>
-            <head>
-              <script src="https://google.de/xyz.js">
-              </script>
-            </head>
-            <body>
-              <em>#{rand.to_s}</em>
-            </body>
-          </html>
-        HTML
-      }
+      r.get "", MyEndpoint
     end
 
     define_middleware_stack({
@@ -45,6 +55,14 @@ class TestApp < Tjeneste::Application
       Tjeneste::Middlewares::SessionMiddleware => Tuple.new("session_id"),
       Tjeneste::Routing::RoutingEndpoint => Tuple.new(router)
     })
+  end
+
+  class MyEndpoint < Tjeneste::Routing::Endpoint
+    def call(ctx)
+      ctx.response.status_code = 200
+      ctx.response.puts "All working"
+      ctx.response.close
+    end
   end
 
 end

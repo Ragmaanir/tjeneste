@@ -2,14 +2,14 @@ module Tjeneste
   module Routing
     class RoutingEndpoint(C)
 
-      class Context # FIXME Context = C
-        forward_missing_to original
-
-        getter original
-
-        def initialize(@original : C)
-        end
-      end
+      # class Context # FIXME Context = C
+      #   forward_missing_to original
+      #
+      #   getter original
+      #
+      #   def initialize(@original : C)
+      #   end
+      # end
 
       getter router
 
@@ -20,9 +20,9 @@ module Tjeneste
         route = router.route(context.request)
 
         if route
-          route.action.call(context.request)
+          route.action.call(context)
         else
-          HTTP::Response.not_found
+          context.response.status_code = 404
         end
       end
     end

@@ -5,19 +5,26 @@ describe Tjeneste::Middleware do
     # mid = Tjeneste::TimingMiddleware(Tjeneste::TimingMiddleware::Context -> HTTP::Response).new(
     #   ->(c : Tjeneste::TimingMiddleware::Context){ HTTP::Response.not_found }
     # )
-    endpoint = ->(c : Tjeneste::Middlewares::TimingMiddleware::Context){ HTTP::Response.not_found }
+    endpoint = ->(c : Tjeneste::Middlewares::TimingMiddleware::Context) do
+      c.response.status_code = 404
+    end
     mid = Tjeneste::Middlewares::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
 
     req = HTTP::Request.new("GET", "/")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
 
-    assert mid.call(Tjeneste::HttpContext.new(req)).status_code == 404
+    mid.call(Tjeneste::HttpContext.new(ctx))
+    assert ctx.response.status_code == 404
   end
 
   it "fires a global timing event" do
-    endpoint = ->(c : Tjeneste::Middlewares::TimingMiddleware::Context){ HTTP::Response.not_found }
+    endpoint = ->(c : Tjeneste::Middlewares::TimingMiddleware::Context) do
+      c.response.status_code = 404
+    end
     mid = Tjeneste::Middlewares::TimingMiddleware(Tjeneste::HttpContext).new(endpoint)
 
     req = HTTP::Request.new("GET", "/")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
 
     subscriber_notified = false
 
@@ -25,7 +32,7 @@ describe Tjeneste::Middleware do
       subscriber_notified = true
     end
 
-    mid.call(Tjeneste::HttpContext.new(req))
+    mid.call(Tjeneste::HttpContext.new(ctx))
 
     assert subscriber_notified
   end

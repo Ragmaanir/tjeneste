@@ -1,7 +1,7 @@
 module Tjeneste
   module Routing
     class RouterPrinter
-      getter :router
+      getter router
 
       def self.print(router : Router)
         new(router).print
@@ -18,11 +18,14 @@ module Tjeneste
           case node
           when InnerNode
             matchers = stringify_matchers(node.matchers)
-            output << "#{indentation}InnerNode: #{matchers}"
+            matchers = " #{matchers}" if matchers.size > 0
+            output << "#{indentation}InnerNode:#{matchers}"
           when TerminalNode
             matchers = stringify_matchers(node.matchers)
-            output << "#{indentation}TerminalNode: #{matchers}"
+            matchers = " #{matchers}" if matchers.size > 0
+            output << "#{indentation}TerminalNode:#{matchers}"
           end
+          nil
         end
 
         output.join("\n")

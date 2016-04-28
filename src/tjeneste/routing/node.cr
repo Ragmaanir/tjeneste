@@ -1,8 +1,8 @@
 module Tjeneste
   module Routing
     abstract class Node
-      property :parent
-      getter :matchers
+      property parent
+      getter matchers
 
       def initialize(@matchers = [] of Matcher)
       end
@@ -49,7 +49,7 @@ module Tjeneste
     end
 
     class InnerNode < Node
-      getter :children
+      getter children
 
       def initialize(
         @matchers = [] of Matcher,
@@ -71,15 +71,15 @@ module Tjeneste
     end
 
     class TerminalNode < Node
-      MissingAction = ->(req : HTTP::Request) {
-        HTTP::Response.new(404)
+      MissingAction = ->(ctx : HTTP::Server::Context) {
+        ctx.response.status_code = 404
       }
 
-      getter :action
+      getter action
 
       def initialize(
         @matchers = [] of Matcher,
-        @action = MissingAction : Action)
+        @action : Action = MissingAction)
       end
 
       def ==(other : TerminalNode)
@@ -88,6 +88,10 @@ module Tjeneste
 
       def ==(other : Node)
         false
+      end
+
+      def to_s
+        "TerminalNode(matchers: #{matchers}, action: #{action})"
       end
     end
   end

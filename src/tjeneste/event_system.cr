@@ -38,7 +38,7 @@ module Tjeneste
       class EventFilter
         getter :type, :filter
 
-        def initialize(@type : String, @filter = nil : NameFilter?)
+        def initialize(@type : String, @filter : NameFilter? = nil)
         end
 
         def passes?(t : String, name : String)

@@ -14,7 +14,7 @@ module Tjeneste
 
       getter logger
 
-      def initialize(root_node : Node, @logger = Logger.new(STDOUT) : Logger)
+      def initialize(root_node : Node, @logger : Logger = Logger.new(STDOUT))
         # The root nodes matchers are not checked in #route, therefore
         # the passed root node has to be wrapped.
         @internal_root = InnerNode.new(children: [root_node])

@@ -3,14 +3,19 @@ version: 0.1.0
 authors:
   - Ragmaanir <ragmaanir@gmail.com>
 
-#dependencies:
+dependencies:
+  kontrakt:
+    github: ragmaanir/kontrakt
+    version: ~> 0.2
 
 development_dependencies:
   minitest:
     github: ysbaddaden/minitest.cr
-    version: ~> 0.1.5
+    version: ~> 0.3
   power_assert:
-    github: rosylilly/power_assert.cr
-    version: ~> 0.2.2
+    #github: rosylilly/power_assert.cr
+    #version: ~> 0.2
+    github: ragmaanir/power_assert.cr
+    branch: ahead
 
 license: MIT

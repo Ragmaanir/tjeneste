@@ -5,26 +5,28 @@ describe Tjeneste::Routing::Router do
     results = [] of String
     router = Tjeneste::Routing::RouterBuilder.build do |r|
       r.path "topics" do |r|
-        r.post "", ->(_ctx : HTTP::Request) { results << "create"; HTTP::Response.new(200) }
-        r.get :int, ->(_ctx : HTTP::Request) { results << "show"; HTTP::Response.new(200) }
+        r.post "", ->(ctx : HTTP::Server::Context) { results << "create"; ctx.response.status_code = 200 }
+        r.get :int, ->(ctx : HTTP::Server::Context) { results << "show"; ctx.response.status_code = 200 }
       end
     end
 
     # req 1
     req = HTTP::Request.new("POST", "/topics/")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
 
     route = router.route!(req)
 
-    route.action.call(req)
+    route.action.call(ctx)
 
     assert results == ["create"]
 
     # req 2
     req = HTTP::Request.new("GET", "/topics/1")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
 
     route = router.route!(req)
 
-    route.action.call(req)
+    route.action.call(ctx)
 
     assert results == ["create", "show"]
   end
@@ -33,13 +35,15 @@ end
 module MountEndpoint
 
   class MyEndpoint
-    def call(req : HTTP::Request)
-      HTTP::Response.new(200, "MyEndpoint")
+    def call(ctx : HTTP::Server::Context)
+      ctx.response.status_code = 200
+      ctx.response.puts "MyEndpoint"
+      ctx.response.close
     end
   end
 
   describe MountEndpoint do
-    it "" do
+    it "calls the enpoint" do
       router = Tjeneste::Routing::RouterBuilder.build do |r|
         r.path "backend" do |r|
           r.path "topics" do |r|
@@ -49,8 +53,13 @@ module MountEndpoint
       end
 
       req = HTTP::Request.new("GET", "/backend/topics/1337")
+      response_body = MemoryIO.new
+      ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(response_body))
       route = router.route!(req)
-      assert route.action.call(req).body == "MyEndpoint"
+      route.action.call(ctx)
+      response_body.rewind
+      resp = HTTP::Client::Response.from_io(response_body)
+      assert resp.body == "MyEndpoint\n"
     end
   end
 end
@@ -61,8 +70,10 @@ module MountMiddleware
     def initialize(@param)
     end
 
-    def call(req : HTTP::Request)
-      HTTP::Response.new(200, "#{req.path}, #{req.method}, #{@param}")
+    def call(ctx : HTTP::Server::Context)
+      ctx.response.status_code = 200
+      ctx.response.puts "#{ctx.request.path}, #{ctx.request.method}, #{@param}"
+      ctx.response.close
     end
   end
 
@@ -75,8 +86,13 @@ module MountMiddleware
       end
 
       req = HTTP::Request.new("XYZ", "/topics/all/extra_path")
+      response_body = MemoryIO.new
+      ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(response_body))
       route = router.route!(req)
-      assert route.action.call(req).body == "/topics/all/extra_path, XYZ, some_param"
+      route.action.call(ctx)
+      response_body.rewind
+      resp = HTTP::Client::Response.from_io(response_body)
+      assert resp.body == "/topics/all/extra_path, XYZ, some_param\n"
     end
   end
 end

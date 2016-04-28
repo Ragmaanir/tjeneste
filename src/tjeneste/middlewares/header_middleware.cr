@@ -15,10 +15,9 @@ module Tjeneste
       def initialize(@headers : Hash(String, String), @successor)
       end
 
-      def call(context : C) : HTTP::Response
-        response = successor.call(Context.new(context))
-        response.headers.merge!(headers)
-        response
+      def call(context : C)
+        ctx = successor.call(Context.new(context))
+        ctx.response.headers.merge!(headers)
       end
     end
   end

@@ -1,7 +1,7 @@
 module Tjeneste
   module Routing
     class RequestState
-      property :request, :path_index
+      property request, path_index
 
       def initialize(@request : HTTP::Request, @path_index = 0)
       end

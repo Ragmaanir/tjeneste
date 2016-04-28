@@ -20,7 +20,7 @@ module Tjeneste
         int: /\A\d+/
       }
 
-      getter :matcher
+      getter matcher
 
       def initialize(@matcher)
       end
@@ -64,7 +64,7 @@ module Tjeneste
     end
 
     class VerbMatcher < Matcher
-      getter :verb
+      getter verb
 
       def initialize(@verb : Verb)
       end

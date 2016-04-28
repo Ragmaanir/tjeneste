@@ -5,7 +5,7 @@ module Tjeneste
     end
 
     class MatchSuccess < MatchResult
-      property :request
+      property request
 
       def initialize(@request : RequestState)
       end
@@ -16,7 +16,7 @@ module Tjeneste
     end
 
     class MatchFailure < MatchResult
-      property :error
+      property error
 
       def initialize(@error)
       end

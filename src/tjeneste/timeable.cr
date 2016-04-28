@@ -3,7 +3,7 @@ require "./event_system"
 module Tjeneste
   module Timeable
     class Timing
-      getter :timespan, :start, :stop
+      getter timespan, start, stop
 
       forward_missing_to timespan
 
@@ -17,8 +17,7 @@ module Tjeneste
     end
 
     class TimingEvent < EventSystem::Event
-      @timing :: Timing
-      getter :timing
+      getter timing : Timing
 
       def initialize(@timing)
       end
