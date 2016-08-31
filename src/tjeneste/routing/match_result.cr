@@ -18,7 +18,7 @@ module Tjeneste
     class MatchFailure < MatchResult
       property error
 
-      def initialize(@error)
+      def initialize(@error : String)
       end
 
       def success?

@@ -2,13 +2,9 @@ version: 1.0
 shards:
   kontrakt:
     github: ragmaanir/kontrakt
-    version: 0.2.0
+    version: 0.2.1
 
-  minitest:
-    github: ysbaddaden/minitest.cr
-    version: 0.3.3
-
-  power_assert:
-    github: ragmaanir/power_assert.cr
-    commit: c08fb9a09db1dd62325d3a1b8df27688f5523069
+  microtest:
+    github: ragmaanir/microtest
+    commit: 6b5f95f974ade347db90ebd3487ca9e2fa2001b7
 

@@ -1,8 +1,8 @@
-#require "spec"
-require "power_assert"
+require "microtest"
 
 require "../src/tjeneste"
 
-require "minitest/autorun"
-
 include Tjeneste::Routing
+
+include Microtest::DSL
+Microtest.run!

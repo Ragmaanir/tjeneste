@@ -89,7 +89,7 @@ macro define_middleware_stack(*classes)
   {% for c, idx in classes %}
     {% if idx == 0 %}
       {{c}}(::Context).new(
-    {% elsif idx == classes.length - 1 %}
+    {% elsif idx == classes.size - 1 %}
       {{c}}({{classes[idx-1]}}::Context).new(
     {% else %}
       {{c}}({{classes[idx-1]}}::Context).new(

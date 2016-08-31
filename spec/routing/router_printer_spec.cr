@@ -1,29 +1,30 @@
 require "../spec_helper"
 
 describe Tjeneste::Routing::RouterPrinter do
+  TN = Tjeneste::Routing::TerminalNode
 
-  it "prints multiple nodes as a tree" do
+  test "prints multiple nodes as a tree" do
     root = InnerNode.new(children: [
-      TerminalNode.new(
+      TN.new(
         matchers: [
           VerbMatcher.new(Tjeneste::Routing::Verb::POST),
-          PathMatcher.new("users/")
-        ]
+          PathMatcher.new("users/"),
+        ] of Matcher
       ),
       InnerNode.new(
         matchers: [
-          PathMatcher.new("topics/")
-        ],
+          PathMatcher.new("topics/"),
+        ] of Matcher,
         children: [
-          TerminalNode.new(
+          TN.new(
             matchers: [
               VerbMatcher.new(Tjeneste::Routing::Verb::GET),
-              PathMatcher.new(:int)
-            ]
-          )
-        ]
-      )
-    ])
+              PathMatcher.new(:int),
+            ] of Matcher
+          ),
+        ] of Tjeneste::Routing::Node
+      ),
+    ] of Tjeneste::Routing::Node)
     router = Tjeneste::Routing::Router.new(root)
 
     tree = <<-TREE
@@ -35,5 +36,4 @@ describe Tjeneste::Routing::RouterPrinter do
 
     assert RouterPrinter.print(router) == tree
   end
-
 end

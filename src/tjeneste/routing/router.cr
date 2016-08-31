@@ -1,9 +1,8 @@
 module Tjeneste
   module Routing
     class Router
-
       class NoRouteFoundException < Exception
-        def initialize(@request)
+        def initialize(@request : HTTP::Request)
           super(to_s)
         end
 
@@ -17,7 +16,7 @@ module Tjeneste
       def initialize(root_node : Node, @logger : Logger = Logger.new(STDOUT))
         # The root nodes matchers are not checked in #route, therefore
         # the passed root node has to be wrapped.
-        @internal_root = InnerNode.new(children: [root_node])
+        @internal_root = InnerNode.new(children: [root_node] of Node)
       end
 
       def root
@@ -32,10 +31,10 @@ module Tjeneste
         while true
           case node
           when TerminalNode
-            leaf = node as TerminalNode
+            leaf = node.as(TerminalNode)
             return Route.new(node_path, leaf.action)
           when InnerNode
-            inner = node as InnerNode
+            inner = node.as(InnerNode)
             next_node = inner.children.find do |c|
               if res = c.match(req)
                 req = res
@@ -75,7 +74,6 @@ module Tjeneste
           end
         end
       end
-
     end
   end
 end

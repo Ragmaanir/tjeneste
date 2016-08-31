@@ -1,10 +1,12 @@
 module Tjeneste
   module Routing
     abstract class Node
-      property parent
-      getter matchers
+      property parent : Node?
+      getter matchers : Array(Matcher)
 
-      def initialize(@matchers = [] of Matcher)
+      def initialize(matchers = [] of Matcher)
+        @matchers = [] of Matcher
+        matchers.each { |m| @matchers << m }
       end
 
       def root?
@@ -34,7 +36,7 @@ module Tjeneste
           res = m.match(request)
           results << res
           case res
-            when MatchSuccess then request = res.request
+          when MatchSuccess then request = res.request
           end
         end
 
@@ -49,12 +51,15 @@ module Tjeneste
     end
 
     class InnerNode < Node
-      getter children
+      getter children : Array(Node)
 
       def initialize(
-        @matchers = [] of Matcher,
-        @children = [] of Node)
-        @children.each{ |c| c.parent = self }
+                     matchers = [] of Matcher,
+                     children = [] of Node)
+        super(matchers)
+        @children = [] of Node
+        children.each { |c| @children << c }
+        @children.each { |c| c.parent = self }
       end
 
       def ==(other : InnerNode)
@@ -66,20 +71,22 @@ module Tjeneste
       end
 
       def to_s
-       "Node(matchers: #{matchers}, children: [#{children.map{ |c| c.to_s as String }.join(",")}])"
+        "Node(matchers: #{matchers}, children: [#{children.map { |c| c.to_s.as(String) }.join(",")}])"
       end
     end
 
     class TerminalNode < Node
       MissingAction = ->(ctx : HTTP::Server::Context) {
         ctx.response.status_code = 404
+        nil
       }
 
       getter action
 
       def initialize(
-        @matchers = [] of Matcher,
-        @action : Action = MissingAction)
+                     matchers = [] of Matcher,
+                     @action : Action = MissingAction)
+        super(matchers)
       end
 
       def ==(other : TerminalNode)

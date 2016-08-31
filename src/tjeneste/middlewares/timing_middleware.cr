@@ -12,10 +12,11 @@ module Tjeneste
         end
       end
 
-      class Context # FIXME Context = C
+      # class Context # FIXME Context = C
+      class Context(C)
         forward_missing_to original
 
-        getter original
+        getter original : C
 
         def initialize(@original : C)
         end

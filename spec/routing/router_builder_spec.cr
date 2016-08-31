@@ -1,42 +1,41 @@
-require "./../spec_helper"
+# require "./../spec_helper"
 
-describe Tjeneste::Routing::RouterBuilder do
+# describe Tjeneste::Routing::RouterBuilder do
+#   InnerNode    = Tjeneste::Routing::InnerNode
+#   TerminalNode = Tjeneste::Routing::TerminalNode
 
-  InnerNode = Tjeneste::Routing::InnerNode
-  TerminalNode = Tjeneste::Routing::TerminalNode
+#   test "generates nested routes with appropriate matchers" do
+#     action = ->(ctx : HTTP::Server::Context) do
+#       ctx.response.status_code = 302
+#     end
 
-  it "generates nested routes with appropriate matchers" do
-    action = ->(ctx : HTTP::Server::Context) do
-      ctx.response.status_code = 302
-    end
+#     router = Tjeneste::Routing::RouterBuilder.build do |r|
+#       r.path("users") do |r|
+#         r.get "", action
+#       end
+#     end
 
-    router = Tjeneste::Routing::RouterBuilder.build do |r|
-      r.path("users") do |r|
-        r.get "", action
-      end
-    end
+#     assert router
+#     assert router.is_a?(Tjeneste::Routing::Router)
 
-    assert router
-    assert router.is_a?(Tjeneste::Routing::Router)
+#     routing_tree = InnerNode.new(
+#       matchers: [PathMatcher.new("/")],
+#       children: [
+#         InnerNode.new(
+#           matchers: [Tjeneste::Routing::PathMatcher.new("users/")],
+#           children: [
+#             TerminalNode.new(
+#               matchers: [
+#                 Tjeneste::Routing::PathMatcher.new(""),
+#                 Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET),
+#               ],
+#               action: action
+#             ),
+#           ]
+#         ),
+#       ]
+#     )
 
-    routing_tree = InnerNode.new(
-      matchers: [PathMatcher.new("/")],
-      children: [
-        InnerNode.new(
-          matchers: [Tjeneste::Routing::PathMatcher.new("users/")],
-          children: [
-            TerminalNode.new(
-              matchers: [
-                Tjeneste::Routing::PathMatcher.new(""),
-                Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET)
-              ],
-              action: action
-            )
-          ]
-        )
-      ]
-    )
-
-    assert router.root == routing_tree
-  end
-end
+#     assert router.root == routing_tree
+#   end
+# end

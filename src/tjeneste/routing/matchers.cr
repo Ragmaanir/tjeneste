@@ -1,12 +1,11 @@
 module Tjeneste
   module Routing
-
     enum Verb
-      GET     = 1
-      POST    = 2
-      PUT     = 3
-      DELETE  = 4
-      HEAD    = 5
+      GET    = 1
+      POST   = 2
+      PUT    = 3
+      DELETE = 4
+      HEAD   = 5
     end
 
     abstract class Matcher
@@ -15,14 +14,13 @@ module Tjeneste
     end
 
     class PathMatcher < Matcher
-
       PREDEFINED_MATCHERS = {
-        int: /\A\d+/
+        int: /\A\d+/,
       }
 
       getter matcher
 
-      def initialize(@matcher)
+      def initialize(@matcher : String | Regex | Symbol)
       end
 
       def match(request : RequestState)
@@ -39,7 +37,7 @@ module Tjeneste
 
       private def match_internally(matcher : Regex, request : RequestState) : MatchResult
         if m = matcher.match(request.path)
-          MatchSuccess.new(RequestState.new(request, request.path_index + m.length))
+          MatchSuccess.new(RequestState.new(request, request.path_index + m.size))
         else
           MatchFailure.new("#{matcher.source} != #{request.path}")
         end
@@ -85,6 +83,5 @@ module Tjeneste
         false
       end
     end
-
   end
 end
