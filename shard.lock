@@ -2,9 +2,9 @@ version: 1.0
 shards:
   kontrakt:
     github: ragmaanir/kontrakt
-    version: 0.2.1
+    version: 0.2.2
 
   microtest:
     github: ragmaanir/microtest
-    commit: 6b5f95f974ade347db90ebd3487ca9e2fa2001b7
+    commit: cd2d95be35edbd63ebfeb0b56dd14b8163131db7
 

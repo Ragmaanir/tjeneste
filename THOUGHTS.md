@@ -43,8 +43,8 @@ What i managed to do is
   module Topics
     class Create
       params(
-        id : Int32,
-        special : Int32?
+        id: Int32,
+        special: Int32?
       )
 
       validate do
@@ -64,9 +64,9 @@ What i managed to do is
     class Create
       class Params
         mapping(
-          id : Int32,
-          special : Int32,
-          nested : TopicParams
+          id: Int32,
+          special: Int32,
+          nested: TopicParams.mapping
         )
 
         validate do
