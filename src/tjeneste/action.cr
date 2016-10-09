@@ -10,6 +10,7 @@ module Tjeneste
         new.call_wrapper(context)
       end
 
+      # FIXME make sure that the router instantiates new actions every time
       def call_wrapper(context : HTTP::Server::Context)
         r = context.request
         params = Params.new(r.query_params)

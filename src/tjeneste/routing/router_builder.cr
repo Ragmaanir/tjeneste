@@ -1,7 +1,5 @@
 module Tjeneste
   module Routing
-    alias Action = (HTTP::Server::Context -> Nil)
-
     class RouterBuilder
       # Actually builds just the array of children and returns them as :result
       class NodeBuilder
@@ -27,30 +25,27 @@ module Tjeneste
         end
 
         {% for verb in Verb.constants %}
-          def {{verb.id.downcase}}(name, target : T, *args) : Nil
-            action(Verb::{{verb.id}}, name, target, *args)
+          def {{verb.id.downcase}}(*args) : Nil
+            action(Verb::{{verb.id}}, *args)
+          end
+
+          def {{verb.id.downcase}}(*args, &block : HTTP::Server::Context -> Nil) : Nil
+            action(Verb::{{verb.id}}, *args, &block)
           end
         {% end %}
 
-        private def action(verb : Verb, name, target : Action) : Nil
+        private def action(verb : Verb, name, target : HTTP::Handler | Action, *args) : Nil
           @result << TerminalNode.new(
             matchers: [PathMatcher.new(name), VerbMatcher.new(verb)] of Matcher,
             action: target
           )
-          nil
         end
 
-        private def action(verb : Verb, name, target : HTTP::Server::Context -> T) : Nil
+        private def action(verb : Verb, name, &block : HTTP::Server::Context -> Nil) : Nil
           @result << TerminalNode.new(
             matchers: [PathMatcher.new(name), VerbMatcher.new(verb)] of Matcher,
-            action: ->(ctx : HTTP::Server::Context) { target.call(ctx); nil }
+            action: BlockHandler.new(&block)
           )
-          nil
-        end
-
-        private def action(verb : Verb, name, target : T, *args) : Nil
-          wrapper = ->(ctx : HTTP::Server::Context) { target.new(*args).call(ctx) }
-          action(verb, name, wrapper)
         end
 
         def mount(name, middleware, *args) : Nil

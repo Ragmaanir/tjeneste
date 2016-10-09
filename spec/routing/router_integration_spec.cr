@@ -2,11 +2,25 @@ require "../spec_helper"
 
 describe Tjeneste::Routing::Router do
   test "routes requests to the associated actions" do
+    # results = [] of String
+    # router = Tjeneste::Routing::RouterBuilder.build do |r|
+    #   r.path "topics" do |r|
+    #     r.post "", ->(ctx : HTTP::Server::Context) { results << "create"; ctx.response.status_code = 200 }
+    #     r.get :int, ->(ctx : HTTP::Server::Context) { results << "show"; ctx.response.status_code = 200 }
+    #   end
+    # end
+
     results = [] of String
     router = Tjeneste::Routing::RouterBuilder.build do |r|
       r.path "topics" do |r|
-        r.post "", ->(ctx : HTTP::Server::Context) { results << "create"; ctx.response.status_code = 200 }
-        r.get :int, ->(ctx : HTTP::Server::Context) { results << "show"; ctx.response.status_code = 200 }
+        r.post "" do |ctx|
+          results << "create"
+          ctx.response.status_code = 200
+        end
+        r.get :int do |ctx|
+          results << "show"
+          ctx.response.status_code = 200
+        end
       end
     end
 
@@ -16,7 +30,7 @@ describe Tjeneste::Routing::Router do
 
     route = router.route!(req)
 
-    route.action.call(ctx)
+    route.action.as(Tjeneste::BlockHandler).call(ctx)
 
     assert results == ["create"]
 
@@ -26,7 +40,7 @@ describe Tjeneste::Routing::Router do
 
     route = router.route!(req)
 
-    route.action.call(ctx)
+    route.action.as(Tjeneste::BlockHandler).call(ctx)
 
     assert results == ["create", "show"]
   end

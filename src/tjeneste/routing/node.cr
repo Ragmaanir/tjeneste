@@ -76,16 +76,22 @@ module Tjeneste
     end
 
     class TerminalNode < Node
-      MissingAction = ->(ctx : HTTP::Server::Context) {
-        ctx.response.status_code = 404
-        nil
-      }
+      class EmptyHandler < HTTP::Handler
+        def call(ctx : HTTP::Server::Context)
+          ctx.response.puts "EmptyHandler"
+          ctx.response.status_code = 200
+        end
+      end
 
-      getter action
+      getter action : Action | HTTP::Handler
+
+      def initialize(matchers : Array(Matcher), @action : Action)
+        super(matchers)
+      end
 
       def initialize(
                      matchers = [] of Matcher,
-                     @action : Action = MissingAction)
+                     @action : HTTP::Handler = EmptyHandler.new)
         super(matchers)
       end
 

@@ -3,12 +3,11 @@ require "./node"
 module Tjeneste
   module Routing
     class Route
-      getter path   : Array(Node)
-      getter action : Action
+      getter path : Array(Node)
+      getter action : Action | HTTP::Handler
 
-      def initialize(@path : Array(Node), @action : Action)
+      def initialize(@path, @action)
       end
-
     end
   end
 end
