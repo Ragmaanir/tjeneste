@@ -5,12 +5,12 @@ module Tjeneste
     class TimingMiddleware(C) < Middleware
       include Timeable
 
-      class RequestTimingEvent < EventSystem::Event
-        getter context, timing, response
+      # class RequestTimingEvent < EventSystem::Event
+      #   getter context, timing, response
 
-        def initialize(@timing, @context : C, @response)
-        end
-      end
+      #   def initialize(@timing, @context : C, @response)
+      #   end
+      # end
 
       # class Context # FIXME Context = C
       class Context(C)
@@ -32,7 +32,7 @@ module Tjeneste
           successor.call(Context.new(context))
         end
 
-        EventSystem::Global.publish(TimingMiddleware, "timing", RequestTimingEvent.new(timing, context, result))
+        # EventSystem::Global.publish(TimingMiddleware, "timing", RequestTimingEvent.new(timing, context, result))
         result
       end
     end

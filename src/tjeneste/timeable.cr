@@ -1,4 +1,4 @@
-require "./event_system"
+# require "./event_system"
 
 module Tjeneste
   module Timeable
@@ -16,16 +16,16 @@ module Tjeneste
       end
     end
 
-    class TimingEvent < EventSystem::Event
-      getter timing : Timing
+    # class TimingEvent < EventSystem::Event
+    #   getter timing : Timing
 
-      def initialize(@timing)
-      end
+    #   def initialize(@timing)
+    #   end
 
-      def to_s
-        "#{timing.start} (#{timing.milliseconds}ms)"
-      end
-    end
+    #   def to_s
+    #     "#{timing.start} (#{timing.milliseconds}ms)"
+    #   end
+    # end
 
     private def profile
       start = Time.now

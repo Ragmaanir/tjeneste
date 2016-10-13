@@ -1,22 +1,21 @@
 require "./server"
 require "./middleware"
-require "./http_context"
 require "./routing/**"
 
 module Tjeneste
   abstract class Application
+    getter logger : Logger
+    getter middleware_stack : Middlewares::RoutingMiddleware
 
-    getter logger
-
-    def initialize(@port : Int = 3000, @logger : Logger = Logger.new(STDOUT))
+    def initialize(@port : Int32 = 3000, @logger = Logger.new(STDOUT))
       @middleware_stack = build_middleware
 
-      @server = Tjeneste::Server.new(@port, @logger, ->(ctx : HTTP::Server::Context) {
-        @middleware_stack.call(HttpContext.new(ctx))
-      })
+      @server = Tjeneste::Server.new(@port, @logger) do |ctx|
+        @middleware_stack.call(ctx)
+      end
     end
 
-    abstract def build_middleware : Middleware
+    abstract def build_middleware : HTTP::Server::Context
 
     def run
       @server.start

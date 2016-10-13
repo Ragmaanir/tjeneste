@@ -23,7 +23,7 @@ describe Tjeneste::Action do
     end
 
     def call(params : Params, data : Data)
-      puts data.validate.display
+      data.validate!
       data.a + data.b
     end
   end

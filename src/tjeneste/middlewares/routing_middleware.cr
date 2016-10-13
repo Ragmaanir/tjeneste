@@ -1,21 +1,12 @@
 module Tjeneste
-  module Routing
-    class RoutingEndpoint(C)
-      # class Context # FIXME Context = C
-      #   forward_missing_to original
-      #
-      #   getter original
-      #
-      #   def initialize(@original : C)
-      #   end
-      # end
+  module Middlewares
+    class RoutingMiddleware
+      getter router : Routing::Router
 
-      getter router
-
-      def initialize(@router : Routing::Router)
+      def initialize(@router)
       end
 
-      def call(context : C)
+      def call(context : HTTP::Server::Context)
         route = router.route(context.request)
 
         if route
@@ -23,7 +14,7 @@ module Tjeneste
           case action
           when HTTP::Handler then action.call(context)
           when Action        then action.call_wrapper(context)
-          else                    raise
+          else                    raise("Invalid action type")
           end
         else
           context.response.status_code = 404
