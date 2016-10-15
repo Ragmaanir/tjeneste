@@ -52,7 +52,7 @@ module Tjeneste
           # wrapper = ->(ctx : HTTP::Server::Context) { middleware.new(*args).call(ctx); nil }
           @result << TerminalNode.new(
             matchers: [PathMatcher.new(name)] of Matcher,
-            action: BlockHandler.new { middleware.new(*args).call(ctx); nil }
+            action: BlockHandler.new { |ctx| middleware.new(*args).call(ctx); nil }
           )
           nil
         end

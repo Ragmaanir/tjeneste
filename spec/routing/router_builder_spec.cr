@@ -50,4 +50,25 @@ describe Tjeneste::Routing::RouterBuilder do
 
     assert router.root == routing_tree
   end
+
+  test "mounting" do
+    router = Tjeneste::Routing::RouterBuilder.build do |r|
+      r.mount "", MyHandler
+    end
+
+    routing_tree = InnerNode.new(
+      matchers: [PathMatcher.new("/")],
+      children: [
+        TerminalNode.new(
+          matchers: [
+            Tjeneste::Routing::PathMatcher.new(""),
+            Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET),
+          ],
+          action: BlockHandler.new { |ctx| MyHandler.new.call(ctx); nil }
+        ),
+      ]
+    )
+
+    # assert router.root == routing_tree
+  end
 end
