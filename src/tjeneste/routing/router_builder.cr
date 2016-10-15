@@ -49,10 +49,10 @@ module Tjeneste
         end
 
         def mount(name, middleware, *args) : Nil
-          wrapper = ->(ctx : HTTP::Server::Context) { middleware.new(*args).call(ctx); nil }
+          # wrapper = ->(ctx : HTTP::Server::Context) { middleware.new(*args).call(ctx); nil }
           @result << TerminalNode.new(
             matchers: [PathMatcher.new(name)] of Matcher,
-            action: wrapper
+            action: BlockHandler.new { middleware.new(*args).call(ctx); nil }
           )
           nil
         end

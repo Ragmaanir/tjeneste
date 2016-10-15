@@ -15,7 +15,7 @@ module Tjeneste
       end
     end
 
-    abstract def build_middleware : HTTP::Server::Context
+    abstract def build_middleware : Middleware
 
     def run
       @server.start
