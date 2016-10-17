@@ -69,6 +69,7 @@ describe Tjeneste::Routing::RouterBuilder do
       ]
     )
 
+    # FIXME == comparison does not work for closures
     # assert router.root == routing_tree
   end
 end

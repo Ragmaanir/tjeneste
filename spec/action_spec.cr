@@ -24,16 +24,20 @@ describe Tjeneste::Action do
 
     def call(params : Params, data : Data)
       data.validate!
-      data.a + data.b
+      json_response(data.a + data.b)
     end
   end
 
   test "parameters are used when invoking the action" do
     req = HTTP::Request.new("GET", "/topics?id=5", nil, {a: 1000, b: 666, c: 1}.to_json)
-    resp = HTTP::Server::Response.new(MemoryIO.new(1000))
+    io = MemoryIO.new(1000)
+    resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
-    assert SampleAction.call(c) == 1666
+    SampleAction.call(c)
+    io.rewind
+    resp = HTTP::Client::Response.from_io(io)
+    assert resp.body == "1666"
   end
 
   test "validations fail" do

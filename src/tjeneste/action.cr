@@ -5,7 +5,28 @@ module Tjeneste
     class ValidationError < Exception
     end
 
+    module MIME
+      HTML = "text/html; charset=utf-8"
+      JSON = "application/json"
+    end
+
+    module ResponseHelpers
+      def json_response(data, status : Int32 = 200, headers : Hash(String, String) = {} of String => String)
+        {status, data.to_json, {"Content-Type" => MIME::JSON}.merge(headers)}
+      end
+
+      def html_response(data : String, status : Int32 = 200, headers : Hash(String, String) = {} of String => String)
+        {status, data, {"Content-Type" => MIME::HTML}.merge(headers)}
+      end
+
+      def empty_response(headers : Hash(String, String) = {} of String => String)
+        {204, "", headers}
+      end
+    end
+
     macro included
+      include ResponseHelpers
+
       def self.call(context : HTTP::Server::Context)
         new.call_wrapper(context)
       end
@@ -17,7 +38,15 @@ module Tjeneste
         data = Data.load(r.body || "")
         params.validate!
         data.validate!
-        call(params, data)
+
+        status, body, headers = call(params, data)
+
+        context.response.status_code = status
+        headers.each do |k, v|
+          context.response.headers.add(k, v)
+        end
+        context.response.print(body)
+        context.response.close
       end
     end # included
 
