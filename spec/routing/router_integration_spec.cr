@@ -11,13 +11,13 @@ describe Tjeneste::Routing::Router do
     # end
 
     results = [] of String
-    router = Tjeneste::Routing::RouterBuilder.build do |r|
-      r.path "topics" do |r|
-        r.post "" do |ctx|
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "topics" do
+        post "test" do |ctx|
           results << "create"
           ctx.response.status_code = 200
         end
-        r.get :int do |ctx|
+        get :int do |ctx|
           results << "show"
           ctx.response.status_code = 200
         end
@@ -25,12 +25,12 @@ describe Tjeneste::Routing::Router do
     end
 
     # req 1
-    req = HTTP::Request.new("POST", "/topics/")
+    req = HTTP::Request.new("POST", "/topics/test")
     ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
 
     route = router.route!(req)
 
-    route.action.as(Tjeneste::BlockHandler).call(ctx)
+    route.action.as(Tjeneste::HttpBlock).call(ctx)
 
     assert results == ["create"]
 
@@ -40,7 +40,7 @@ describe Tjeneste::Routing::Router do
 
     route = router.route!(req)
 
-    route.action.as(Tjeneste::BlockHandler).call(ctx)
+    route.action.as(Tjeneste::HttpBlock).call(ctx)
 
     assert results == ["create", "show"]
   end

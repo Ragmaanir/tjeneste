@@ -17,6 +17,7 @@ module Tjeneste
         # The root nodes matchers are not checked in #route, therefore
         # the passed root node has to be wrapped.
         @internal_root = InnerNode.new(children: [root_node] of Node)
+        # @internal_root = root_node
       end
 
       def root
@@ -26,7 +27,7 @@ module Tjeneste
       def route(request : HTTP::Request) : Route?
         node = @internal_root
         node_path = [] of Node
-        req = RequestState.new(request)
+        req = RoutingState.new(request)
 
         while true
           case node
@@ -73,6 +74,10 @@ module Tjeneste
             callback.call(node)
           end
         end
+      end
+
+      def inspect(io : IO)
+        io << "Router(root: #{root})"
       end
     end
   end

@@ -9,13 +9,13 @@ module Tjeneste
     end
 
     abstract class Matcher
-      abstract def match(request : RequestState) : RequestState?
+      abstract def match(request : RoutingState) : RoutingState?
       abstract def ==(other : Matcher)
     end
 
     class PathMatcher < Matcher
       PREDEFINED_MATCHERS = {
-        int: /\A\d+/,
+        int: /\A\d+\z/,
       }
 
       getter matcher
@@ -23,32 +23,33 @@ module Tjeneste
       def initialize(@matcher : String | Regex | Symbol)
       end
 
-      def match(request : RequestState)
+      def match(request : RoutingState)
         match_internally(@matcher, request)
       end
 
-      private def match_internally(matcher : String, request : RequestState) : MatchResult
-        if request.path.starts_with?(matcher)
-          MatchSuccess.new(RequestState.new(request, request.path_index + matcher.size))
+      private def match_internally(matcher : String, request : RoutingState) : MatchResult
+        if request.current_segment == matcher
+          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          MatchFailure.new("#{matcher} != #{request.path}")
+          MatchFailure.new("#{matcher} != #{request.current_segment}")
         end
       end
 
-      private def match_internally(matcher : Regex, request : RequestState) : MatchResult
-        if m = matcher.match(request.path)
-          MatchSuccess.new(RequestState.new(request, request.path_index + m.size))
+      private def match_internally(matcher : Regex, request : RoutingState) : MatchResult
+        if m = matcher.match(request.current_segment)
+          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          MatchFailure.new("#{matcher.source} != #{request.path}")
+          MatchFailure.new("#{matcher.source} != #{request.current_segment}")
         end
       end
 
-      private def match_internally(matcher : Symbol, request : RequestState) : MatchResult
+      private def match_internally(matcher : Symbol, request : RoutingState) : MatchResult
         predef = PREDEFINED_MATCHERS[matcher]
-        if m = predef.match(request.path)
-          MatchSuccess.new(RequestState.new(request, request.path_index + m.size))
+
+        if m = predef.match(request.current_segment)
+          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          MatchFailure.new("#{predef.source} != #{request.path}")
+          MatchFailure.new("#{predef.source} != #{request.current_segment}")
         end
       end
 
@@ -59,15 +60,19 @@ module Tjeneste
       def ==(other)
         false
       end
+
+      def to_s(io : IO)
+        io << "PathMatcher(#{matcher.inspect})"
+      end
     end
 
     class VerbMatcher < Matcher
-      getter verb
+      getter verb : Verb
 
-      def initialize(@verb : Verb)
+      def initialize(@verb)
       end
 
-      def match(request : RequestState)
+      def match(request : RoutingState)
         if verb.to_s == request.request.method
           MatchSuccess.new(request)
         else
@@ -81,6 +86,10 @@ module Tjeneste
 
       def ==(other)
         false
+      end
+
+      def to_s(io : IO)
+        io << "VerbMatcher(#{verb})"
       end
     end
   end

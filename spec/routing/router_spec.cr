@@ -4,19 +4,24 @@ describe Tjeneste::Routing::Router do
   TN = Tjeneste::Routing::TerminalNode
 
   test "returns routes when routing is successful" do
-    root = InnerNode.new(matchers: [PathMatcher.new("/")], children: [
+    root = InnerNode.new(children: [
       TN.new(matchers: [PathMatcher.new("users")]),
       TN.new(matchers: [PathMatcher.new("topics")]),
     ])
+
     router = Tjeneste::Routing::Router.new(root)
 
     req = HTTP::Request.new("GET", "/users")
 
     route = router.route!(req)
 
-    assert route.path == [root, root.children.first]
+    path = route.path
+    expected = [root, root.children.first]
+    assert path == expected
+    # FIXME this one causes errors with powe-assert
+    # assert route.path == [root, root.children.first]
 
-    req = HTTP::Request.new("GET", "not_found")
+    req = HTTP::Request.new("GET", "/not_found")
 
     route = router.route(req)
 
@@ -25,15 +30,17 @@ describe Tjeneste::Routing::Router do
 
   test "matches nested paths" do
     root = InnerNode.new(
-      matchers: [PathMatcher.new("/")],
+      matchers: [PathMatcher.new("users")],
       children: [
-        InnerNode.new(matchers: [PathMatcher.new("users/")], children: [
-          InnerNode.new(matchers: [PathMatcher.new("special/")], children: [
+        InnerNode.new(
+          matchers: [PathMatcher.new("special")],
+          children: [
             TN.new(matchers: [PathMatcher.new(:int)]),
-          ]),
-        ]),
+          ]
+        ),
       ]
     )
+
     router = Tjeneste::Routing::Router.new(root)
 
     req = HTTP::Request.new("GET", "/users/special/1")
@@ -44,17 +51,13 @@ describe Tjeneste::Routing::Router do
   end
 
   test "matches HTTP verbs" do
-    root = InnerNode.new(
-      matchers: [PathMatcher.new("/")],
-      children: [
-        TN.new(
-          matchers: [
-            PathMatcher.new("users/"),
-            VerbMatcher.new(Tjeneste::Routing::Verb::POST),
-          ]
-        ),
+    root = TN.new(
+      matchers: [
+        PathMatcher.new("users"),
+        VerbMatcher.new(Tjeneste::Routing::Verb::POST),
       ]
     )
+
     router = Tjeneste::Routing::Router.new(root)
 
     req = HTTP::Request.new("POST", "/users/special/1")

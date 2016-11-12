@@ -14,7 +14,7 @@ module Tjeneste
         output = [] of String
 
         router.traverse_depth_first do |node|
-          indentation = "  "*(node.depth-1)
+          indentation = "  "*(node.depth - 1)
           case node
           when InnerNode
             matchers = stringify_matchers(node.matchers)
@@ -34,7 +34,7 @@ module Tjeneste
       private def stringify_matchers(matchers : Array(Matcher)) : String
         matchers.map do |m|
           case m
-          when PathMatcher then m.matcher
+          when PathMatcher then m.matcher.inspect
           when VerbMatcher then m.verb
           end
         end.join(" ")

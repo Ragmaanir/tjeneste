@@ -9,9 +9,9 @@ module Tjeneste
         matchers.each { |m| @matchers << m }
       end
 
-      def root?
-        parent == nil
-      end
+      # def root?
+      #   parent == nil
+      # end
 
       def depth : Int
         # if parent
@@ -29,7 +29,7 @@ module Tjeneste
         i
       end
 
-      def match(request : RequestState) : RequestState?
+      def match(request : RoutingState) : RoutingState?
         results = [] of MatchResult
 
         all_match = matchers.all? do |m|
@@ -43,7 +43,7 @@ module Tjeneste
         request if all_match
       end
 
-      abstract def to_s : String
+      # abstract def to_s : String
 
       def ==(other : Node)
         matchers == other.matchers
@@ -70,8 +70,14 @@ module Tjeneste
         false
       end
 
-      def to_s
-        "Node(matchers: #{matchers}, children: [#{children.map { |c| c.to_s.as(String) }.join(",")}])"
+      def to_s(io : IO)
+        m = matchers.map(&.to_s).join(", ")
+        c = children.map { |c| "#{c}" }.join(",")
+        io << "Node(matchers: [#{m}], children: [#{c}])"
+      end
+
+      def inspect(io : IO)
+        to_s(io)
       end
     end
 
@@ -83,7 +89,7 @@ module Tjeneste
         end
       end
 
-      getter action : Action | HTTP::Handler
+      getter action : Action | HTTP::Handler | HttpBlock
 
       def initialize(matchers : Array(Matcher), @action : Action)
         super(matchers)
@@ -91,7 +97,7 @@ module Tjeneste
 
       def initialize(
                      matchers = [] of Matcher,
-                     @action : HTTP::Handler = EmptyHandler.new)
+                     @action : HTTP::Handler | HttpBlock = EmptyHandler.new)
         super(matchers)
       end
 
@@ -103,8 +109,13 @@ module Tjeneste
         false
       end
 
-      def to_s
-        "TerminalNode(matchers: #{matchers}, action: #{action})"
+      def to_s(io : IO)
+        m = matchers.map(&.to_s).join(", ")
+        io << "TerminalNode(matchers: [#{m}], action: #{action})"
+      end
+
+      def inspect(io : IO)
+        to_s(io)
       end
     end
   end

@@ -7,7 +7,7 @@ module Tjeneste
     class MatchSuccess < MatchResult
       property request
 
-      def initialize(@request : RequestState)
+      def initialize(@request : RoutingState)
       end
 
       def success?

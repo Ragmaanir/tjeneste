@@ -29,9 +29,9 @@ describe Tjeneste::Routing::RouterPrinter do
 
     tree = <<-TREE
     InnerNode:
-      TerminalNode: POST users/
-      InnerNode: topics/
-        TerminalNode: GET int
+      TerminalNode: POST "users/"
+      InnerNode: "topics/"
+        TerminalNode: GET :int
     TREE
 
     assert RouterPrinter.print(router) == tree

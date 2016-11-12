@@ -15,15 +15,11 @@ describe Tjeneste::Routing::RouterBuilder do
   end
 
   test "generates nested routes with appropriate matchers" do
-    # action = ->(ctx : HTTP::Server::Context) do
-    #   ctx.response.status_code = 302
-    #   nil
-    # end
     handler = MyHandler.new
 
-    router = Tjeneste::Routing::RouterBuilder.build do |r|
-      r.path("users") do |r|
-        r.get "", handler
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path("users") do
+        get "", handler
       end
     end
 
@@ -31,15 +27,15 @@ describe Tjeneste::Routing::RouterBuilder do
     assert router.is_a?(Tjeneste::Routing::Router)
 
     routing_tree = InnerNode.new(
-      matchers: [PathMatcher.new("/")],
+      matchers: [] of Tjeneste::Routing::Matcher,
       children: [
         InnerNode.new(
-          matchers: [Tjeneste::Routing::PathMatcher.new("users/")],
+          matchers: [Tjeneste::Routing::PathMatcher.new("users")],
           children: [
             TerminalNode.new(
               matchers: [
-                Tjeneste::Routing::PathMatcher.new(""),
                 Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET),
+                Tjeneste::Routing::PathMatcher.new(""),
               ],
               action: handler
             ),
@@ -52,8 +48,8 @@ describe Tjeneste::Routing::RouterBuilder do
   end
 
   test "mounting" do
-    router = Tjeneste::Routing::RouterBuilder.build do |r|
-      r.mount "", MyHandler
+    router = Tjeneste::Routing::RouterBuilder.build do
+      mount "", MyHandler
     end
 
     routing_tree = InnerNode.new(
