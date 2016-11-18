@@ -1,15 +1,15 @@
-# tjeneste
+# tjeneste [![Build Status](https://travis-ci.org/Ragmaanir/tjeneste.svg?branch=master)](https://travis-ci.org/Ragmaanir/tjeneste)
 
-Very simple web-framework.
+Very simple json-api-framework (WIP).
 
 ## Installation
 
-Add it to `Projectfile`
+Add this to your application's `shard.yml`:
 
-```crystal
-deps do
-  github "ragmaanir/tjeneste"
-end
+```yaml
+dependencies:
+  tjeneste:
+    github: ragmaanir/tjeneste
 ```
 
 ## Usage
@@ -18,12 +18,6 @@ end
 require "tjeneste"
 ```
 
-TODO: Write usage here for library
-
-## Development
-
-TODO: Write instructions for development
-
 ## TODO
 
 - controllers
@@ -31,15 +25,4 @@ TODO: Write instructions for development
 - response generation helpers
 - simple json generation helpers
 - instrumentation/events
-
-## Contributing
-
-1. Fork it ( https://github.com/ragmaanir/tjeneste/fork )
-2. Create your feature branch (git checkout -b my-new-feature)
-3. Commit your changes (git commit -am 'Add some feature')
-4. Push to the branch (git push origin my-new-feature)
-5. Create a new Pull Request
-
-## Contributors
-
-- [ragmaanir](https://github.com/ragmaanir) ragmaanir - creator, maintainer
+- benchmark tests

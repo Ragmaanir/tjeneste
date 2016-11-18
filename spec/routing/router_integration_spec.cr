@@ -2,14 +2,6 @@ require "../spec_helper"
 
 describe Tjeneste::Routing::Router do
   test "routes requests to the associated actions" do
-    # results = [] of String
-    # router = Tjeneste::Routing::RouterBuilder.build do |r|
-    #   r.path "topics" do |r|
-    #     r.post "", ->(ctx : HTTP::Server::Context) { results << "create"; ctx.response.status_code = 200 }
-    #     r.get :int, ->(ctx : HTTP::Server::Context) { results << "show"; ctx.response.status_code = 200 }
-    #   end
-    # end
-
     results = [] of String
     router = Tjeneste::Routing::RouterBuilder.build do
       path "topics" do

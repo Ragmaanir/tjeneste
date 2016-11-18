@@ -9,16 +9,11 @@ module Tjeneste
         matchers.each { |m| @matchers << m }
       end
 
-      # def root?
-      #   parent == nil
-      # end
+      def root?
+        parent == nil
+      end
 
       def depth : Int
-        # if parent
-        #   parent.depth + 1
-        # else
-        #   0
-        # end
         node = parent
         i = 0
         while node

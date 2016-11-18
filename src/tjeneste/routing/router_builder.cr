@@ -105,7 +105,10 @@ module Tjeneste
       # end
 
       macro mount(name, action)
-        append_child(TerminalNode.new(matchers: [PathMatcher.new({{name}})]))
+        append_child(TerminalNode.new(
+          matchers: [PathMatcher.new({{name}})],
+          action: {{action}}
+        ))
       end
 
       macro path(name, &block)

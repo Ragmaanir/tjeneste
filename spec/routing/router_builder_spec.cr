@@ -3,6 +3,8 @@ require "./../spec_helper"
 describe Tjeneste::Routing::RouterBuilder do
   InnerNode    = Tjeneste::Routing::InnerNode
   TerminalNode = Tjeneste::Routing::TerminalNode
+  VerbMatcher  = Tjeneste::Routing::VerbMatcher
+  PathMatcher  = Tjeneste::Routing::PathMatcher
 
   class MyHandler < HTTP::Handler
     def initialize
@@ -30,12 +32,12 @@ describe Tjeneste::Routing::RouterBuilder do
       matchers: [] of Tjeneste::Routing::Matcher,
       children: [
         InnerNode.new(
-          matchers: [Tjeneste::Routing::PathMatcher.new("users")],
+          matchers: [PathMatcher.new("users")],
           children: [
             TerminalNode.new(
               matchers: [
-                Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET),
-                Tjeneste::Routing::PathMatcher.new(""),
+                VerbMatcher.new(Tjeneste::Routing::Verb::GET),
+                PathMatcher.new(""),
               ],
               action: handler
             ),
@@ -48,24 +50,24 @@ describe Tjeneste::Routing::RouterBuilder do
   end
 
   test "mounting" do
+    handler = MyHandler.new
     router = Tjeneste::Routing::RouterBuilder.build do
-      mount "", MyHandler
+      mount "", handler
     end
 
     routing_tree = InnerNode.new(
-      matchers: [PathMatcher.new("/")],
+      matchers: [] of Matcher,
       children: [
         TerminalNode.new(
           matchers: [
-            Tjeneste::Routing::PathMatcher.new(""),
-            Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::GET),
+            PathMatcher.new(""),
           ],
-          action: BlockHandler.new { |ctx| MyHandler.new.call(ctx); nil }
+          # action: BlockHandler.new { |ctx| MyHandler.new.call(ctx); nil }
+          action: handler
         ),
       ]
     )
 
-    # FIXME == comparison does not work for closures
-    # assert router.root == routing_tree
+    assert router.root == routing_tree
   end
 end
