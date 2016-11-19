@@ -42,9 +42,9 @@ module Tjeneste
   module Routing
     class RouterBuilder
       macro build(&block)
-        b = RouterBuilder.new
+        b = Tjeneste::Routing::RouterBuilder.new
         b.build_block {{block}}
-        Router.new(b.root)
+        Tjeneste::Routing::Router.new(b.root)
       end
 
       def initialize
@@ -75,7 +75,7 @@ module Tjeneste
           x = "
         macro #{v.id}(name, action)
           append_child(Tjeneste::Routing::TerminalNode.new(
-            matchers: [VerbMatcher.new(Verb::#{verb.id}), PathMatcher.new({{name}})],
+            matchers: [Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id}), Tjeneste::Routing::PathMatcher.new({{name}})],
             action: {{action}}
           ))
         end
@@ -105,14 +105,14 @@ module Tjeneste
       # end
 
       macro mount(name, action)
-        append_child(TerminalNode.new(
-          matchers: [PathMatcher.new({{name}})],
+        append_child(Tjeneste::Routing::TerminalNode.new(
+          matchers: [Tjeneste::Routing::PathMatcher.new({{name}})],
           action: {{action}}
         ))
       end
 
       macro path(name, &block)
-        node = InnerNode.new(matchers: [PathMatcher.new({{name}})])
+        node = Tjeneste::Routing::InnerNode.new(matchers: [Tjeneste::Routing::PathMatcher.new({{name}})])
         node_stack << node
         build_block {{block}}
         node_stack.pop
