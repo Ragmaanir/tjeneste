@@ -29,26 +29,53 @@ module Tjeneste
         node_path = [] of Node
         req = RoutingState.new(request)
 
-        while true
+        # loop do
+        #   case node
+        #   when TerminalNode
+        #     leaf = node.as(TerminalNode)
+        #     return Route.new(node_path, leaf.action)
+        #   when InnerNode
+        #     inner = node.as(InnerNode)
+        #     next_node = inner.children.find do |c|
+        #       if res = c.match(req)
+        #         req = res
+        #       end
+        #     end
+
+        #     if next_node
+        #       node_path << next_node
+        #       node = next_node
+        #     else
+        #       return
+        #     end
+        #   else raise "Unknown node type"
+        #   end
+        # end
+
+        loop do
           case node
           when TerminalNode
             leaf = node.as(TerminalNode)
             return Route.new(node_path, leaf.action)
           when InnerNode
             inner = node.as(InnerNode)
+
+            # unless req.remaining_segments?
+            #   puts "Abort: no remaining segments in #{req.inspect}"
+            #   return
+            # end
+
             next_node = inner.children.find do |c|
               if res = c.match(req)
                 req = res
               end
             end
 
-            if next_node
-              node_path << next_node
-              node = next_node
-            else
-              return
-            end
-          else raise "Unknown node type"
+            return unless next_node
+
+            node_path << next_node
+            node = next_node
+          else raise "unknown node type"
           end
         end
       end

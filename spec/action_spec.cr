@@ -30,7 +30,7 @@ describe Tjeneste::Action do
 
   test "parameters are used when invoking the action" do
     req = HTTP::Request.new("GET", "/topics?id=5", nil, {a: 1000, b: 666, c: 1}.to_json)
-    io = MemoryIO.new(1000)
+    io = IO::Memory.new(1000)
     resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
@@ -42,7 +42,7 @@ describe Tjeneste::Action do
 
   test "validations fail" do
     req = HTTP::Request.new("GET", "/topics?id=5", nil, {a: -1, b: 1}.to_json)
-    resp = HTTP::Server::Response.new(MemoryIO.new(1000))
+    resp = HTTP::Server::Response.new(IO::Memory.new(1000))
     c = HTTP::Server::Context.new(req, resp)
 
     assert_raises(Tjeneste::Action::ValidationError) { SampleAction.call(c) }

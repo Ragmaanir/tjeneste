@@ -18,7 +18,7 @@ describe Tjeneste::Routing::Router do
 
     # req 1
     req = HTTP::Request.new("POST", "/topics/test")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
 
     route = router.route!(req)
 
@@ -28,13 +28,65 @@ describe Tjeneste::Routing::Router do
 
     # req 2
     req = HTTP::Request.new("GET", "/topics/1")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(MemoryIO.new("")))
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
 
     route = router.route!(req)
 
     route.action.as(Tjeneste::HttpBlock).call(ctx)
 
     assert results == ["create", "show"]
+  end
+
+  # test "" do
+  #   router = Tjeneste::Routing::RouterBuilder.build do
+  #     path "topics" do
+  #       get "", Endpoints::Topics::Index.new
+  #     end
+
+  #     get "", HomeAction.new
+  #   end
+  # end
+end
+
+describe "Actions" do
+  class SampleAction
+    include Tjeneste::Action
+
+    class Params
+      include Tjeneste::Action::Params
+    end
+
+    class Data
+      include Tjeneste::Action::Data
+
+      mapping(
+        a: Int32,
+        b: Int32,
+      )
+
+      validations do
+        a >= 0
+        b > 0 && b <= 1000
+      end
+    end
+
+    def call(params : Params, data : Data)
+      data.validate!
+      json_response(data.a + data.b)
+    end
+  end
+
+  test "returns route with action" do
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "topics" do
+        get "", SampleAction.new
+      end
+    end
+
+    req = HTTP::Request.new("GET", "/topics")
+
+    route = router.route!(req)
+    assert route.action.is_a?(SampleAction)
   end
 end
 

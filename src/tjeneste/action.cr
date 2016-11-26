@@ -35,7 +35,7 @@ module Tjeneste
       def call_wrapper(context : HTTP::Server::Context)
         r = context.request
         params = Params.new(r.query_params)
-        data = Data.load(r.body || "")
+        data = Data.load(r.body.to_s || "") # FIXME handle IO and other types
         params.validate!
         data.validate!
 
