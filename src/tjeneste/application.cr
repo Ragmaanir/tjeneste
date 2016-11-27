@@ -5,7 +5,7 @@ require "./routing/**"
 module Tjeneste
   abstract class Application
     getter logger : Logger
-    getter middleware_stack : Middlewares::RoutingMiddleware
+    getter middleware_stack : HttpBlock
 
     def initialize(@port : Int32 = 3000, @logger = Logger.new(STDOUT))
       @middleware_stack = build_middleware
@@ -15,7 +15,7 @@ module Tjeneste
       end
     end
 
-    abstract def build_middleware : Middleware
+    abstract def build_middleware : HttpBlock
 
     def run
       @server.start

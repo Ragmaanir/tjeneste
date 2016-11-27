@@ -1,36 +1,36 @@
-require "besked"
-
 module Tjeneste
   module Middlewares
-    class ExceptionMiddleware(C) < Middleware
-      # class ExceptionEvent < EventSystem::Event
-      #   getter exception
+    class ExceptionMiddleware
+      struct ExceptionEvent
+        getter exception : Exception
+        getter context : HTTP::Server::Context
 
-      #   def initialize(@exception, @context : C)
-      #   end
-      # end
-
-      class Context # FIXME Context = C
-        forward_missing_to original
-
-        getter original
-
-        def initialize(@original : C)
+        def initialize(@context : HTTP::Server::Context, @exception : Exception)
         end
       end
 
-      def initialize(@successor)
+      class Publisher
+        include Besked::Publisher(ExceptionEvent)
       end
 
-      getter successor
+      DEFAULT_CALLBACK = ->(c : HTTP::Server::Context, e : Exception) {
+        c.response.status_code = 500
+        c.response.puts "Internal Server Error"
+        c.response.close
+        nil
+      }
 
-      def call(context : C)
-        successor.call(Context.new(context))
-      rescue e
-        # EventSystem::Global.publish(ExceptionMiddleware, "exception", ExceptionEvent.new(e, context))
-        context.response.status_code = 500
-        context.response.puts "Internal Server Error"
-        context.response.close
+      getter successor : HttpBlock
+      getter publisher : Publisher
+
+      def initialize(@successor, @callback : (HTTP::Server::Context, Exception) -> Nil = DEFAULT_CALLBACK, @publisher : Publisher = Publisher.new)
+      end
+
+      def call(context : HTTP::Server::Context)
+        @successor.call(context)
+      rescue exception : Exception
+        @callback.call(context, exception)
+        @publisher.publish(ExceptionEvent.new(context, exception))
       end
     end
   end

@@ -1,4 +1,7 @@
 require "logger"
+require "colorize"
+require "kontrakt"
+require "besked"
 
 require "./tjeneste/**"
 
