@@ -74,15 +74,13 @@ module Tjeneste
           v = verb.downcase
           code = "
         macro #{v.id}(name, action)
-          matchers = [Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id})] of Tjeneste::Routing::Matcher
-
           name = {{name}}
-          if name.is_a?(String) && name.size > 0
-            matchers << Tjeneste::Routing::PathMatcher.new({{name}})
-          end
 
           append_child(Tjeneste::Routing::TerminalNode.new(
-            matchers: matchers,
+            matchers: [
+              Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id}),
+              Tjeneste::Routing::PathMatcher.new({{name}})
+            ],
             action: {{action}}
           ))
         end

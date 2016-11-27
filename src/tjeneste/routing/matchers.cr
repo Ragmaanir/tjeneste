@@ -28,10 +28,14 @@ module Tjeneste
       end
 
       private def match_internally(matcher : String, request : RoutingState) : MatchResult
-        if request.current_segment == matcher
-          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
+        if matcher == "" && !request.remaining_segments?
+          MatchSuccess.new(RoutingState.new(request, request.path_index))
         else
-          MatchFailure.new("#{matcher} != #{request.current_segment}")
+          if request.current_segment == matcher
+            MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
+          else
+            MatchFailure.new("#{matcher} != #{request.current_segment}")
+          end
         end
       end
 

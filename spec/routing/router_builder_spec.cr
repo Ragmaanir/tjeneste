@@ -37,6 +37,7 @@ describe Tjeneste::Routing::RouterBuilder do
             TerminalNode.new(
               matchers: [
                 VerbMatcher.new(Tjeneste::Routing::Verb::GET),
+                PathMatcher.new(""),
               ],
               action: handler
             ),

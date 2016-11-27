@@ -4,6 +4,11 @@ describe Tjeneste::Routing::Router do
   test "routes requests to the associated actions" do
     results = [] of String
     router = Tjeneste::Routing::RouterBuilder.build do
+      get "" do |ctx|
+        results << "root"
+        ctx.response.status_code = 200
+      end
+
       path "topics" do
         post "test" do |ctx|
           results << "create"
@@ -35,6 +40,16 @@ describe Tjeneste::Routing::Router do
     route.action.as(Tjeneste::HttpBlock).call(ctx)
 
     assert results == ["create", "show"]
+
+    # req 3
+    req = HTTP::Request.new("GET", "/")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
+
+    route = router.route!(req)
+
+    route.action.as(Tjeneste::HttpBlock).call(ctx)
+
+    assert results == ["create", "show", "root"]
   end
 
   # test "" do
