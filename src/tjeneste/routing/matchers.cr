@@ -4,8 +4,9 @@ module Tjeneste
       GET    = 1
       POST   = 2
       PUT    = 3
-      DELETE = 4
-      HEAD   = 5
+      PATCH  = 4
+      DELETE = 5
+      HEAD   = 6
     end
 
     abstract class Matcher
@@ -28,14 +29,10 @@ module Tjeneste
       end
 
       private def match_internally(matcher : String, request : RoutingState) : MatchResult
-        if matcher == "" && !request.remaining_segments?
-          MatchSuccess.new(RoutingState.new(request, request.path_index))
+        if request.current_segment == matcher
+          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          if request.current_segment == matcher
-            MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
-          else
-            MatchFailure.new("#{matcher} != #{request.current_segment}")
-          end
+          MatchFailure.new("#{matcher} != #{request.current_segment}")
         end
       end
 

@@ -63,6 +63,27 @@ describe Tjeneste::Routing::Router do
   # end
 end
 
+describe "XXX" do
+  test "" do
+    router = Tjeneste::Routing::RouterBuilder.build do
+      mount "assets", HTTP::StaticFileHandler.new("./public")
+
+      path "topics" do
+        get "" do
+        end
+      end
+
+      get "" do
+      end
+    end
+
+    req = HTTP::Request.new("GET", "/")
+
+    route = router.route!(req)
+    assert route.action.is_a?(Tjeneste::HttpBlock)
+  end
+end
+
 describe "Actions" do
   class SampleAction
     include Tjeneste::Action
