@@ -64,23 +64,31 @@ describe Tjeneste::Routing::Router do
 end
 
 describe "XXX" do
-  test "" do
-    router = Tjeneste::Routing::RouterBuilder.build do
-      mount "assets", HTTP::StaticFileHandler.new("./public")
+  def route_for(router, method, path)
+    puts
+    puts "#{method} #{path}"
+    req = HTTP::Request.new(method, path)
 
-      path "topics" do
-        get "" do
-        end
+    router.route(req)
+  end
+
+  test! "" do
+    router = Tjeneste::Routing::RouterBuilder.build do
+      get "" do
       end
 
-      get "" do
+      path "topics" do
+        get :int do
+        end
       end
     end
 
-    req = HTTP::Request.new("GET", "/")
+    assert route_for(router, "GET", "/")
+    assert route_for(router, "GET", "/topics") == nil
+    assert route_for(router, "GET", "/topics/1")
 
-    route = router.route!(req)
-    assert route.action.is_a?(Tjeneste::HttpBlock)
+    # route = route_for(router, "GET", "/topics")
+    # assert route.action.is_a?(Tjeneste::HttpBlock)
   end
 end
 

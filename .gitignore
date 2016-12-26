@@ -1,7 +1,6 @@
 /.shards/
-/libs/
+/lib/
 /.crystal/
-/doc/
 tjeneste # compiler output
 *.sublime-project
 *.sublime-workspace

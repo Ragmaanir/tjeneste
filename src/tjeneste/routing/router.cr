@@ -25,56 +25,33 @@ module Tjeneste
       end
 
       def route(request : HTTP::Request) : Route?
-        node = @internal_root
         node_path = [] of Node
-        req = RoutingState.new(request)
+        state = RoutingState.new(request)
+        # reqs = [req] of RoutingState
 
-        # loop do
-        #   case node
-        #   when TerminalNode
-        #     leaf = node.as(TerminalNode)
-        #     return Route.new(node_path, leaf.action)
-        #   when InnerNode
-        #     inner = node.as(InnerNode)
-        #     next_node = inner.children.find do |c|
-        #       if res = c.match(req)
-        #         req = res
-        #       end
-        #     end
+        queue = [@internal_root]
 
-        #     if next_node
-        #       node_path << next_node
-        #       node = next_node
-        #     else
-        #       return
-        #     end
-        #   else raise "Unknown node type"
-        #   end
-        # end
-
-        loop do
+        while node = queue.shift
+          puts "#{node.depth} - #{node.class.name.sub(/Tjeneste::Routing::/, "")} - #{state.remaining} - #{node.matchers.map { |m| m.to_s }}"
+          # puts state.remaining
+          # puts node.matchers.map { |m| m.to_s }
+          # puts node.class.name.sub(/Tjeneste::Routing::/, "")
+          # puts node.depth
           case node
           when TerminalNode
-            leaf = node.as(TerminalNode)
-            return Route.new(node_path, leaf.action)
-          when InnerNode
-            inner = node.as(InnerNode)
-
-            # unless req.remaining_segments?
-            #   puts "Abort: no remaining segments in #{req.inspect}"
-            #   return
-            # end
-
-            next_node = inner.children.find do |c|
-              if res = c.match(req)
-                req = res
+            if next_state = node.match(state)
+              if !next_state.remaining_segments?
+                node_path << node
+                return Route.new(node_path, node.action)
               end
             end
-
-            return unless next_node
-
-            node_path << next_node
-            node = next_node
+          when InnerNode
+            if next_state = node.match(state)
+              state = next_state
+              node_path << node
+              puts "next"
+              queue += node.children
+            end
           else raise "unknown node type"
           end
         end

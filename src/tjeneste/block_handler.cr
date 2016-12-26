@@ -1,5 +1,7 @@
 module Tjeneste
-  class BlockHandler < HTTP::Handler
+  class BlockHandler
+    include HTTP::Handler
+
     def initialize(&@block : HTTP::Server::Context -> Nil)
     end
 

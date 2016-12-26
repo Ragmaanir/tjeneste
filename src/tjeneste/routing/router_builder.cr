@@ -76,11 +76,12 @@ module Tjeneste
         macro #{v.id}(name, action)
           name = {{name}}
 
+          matchers = [] of Tjeneste::Routing::Matcher
+          matchers << Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id})
+          matchers << Tjeneste::Routing::PathMatcher.new(name) unless name.is_a?(String) && name.to_s.empty?
+
           append_child(Tjeneste::Routing::TerminalNode.new(
-            matchers: [
-              Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id}),
-              Tjeneste::Routing::PathMatcher.new({{name}})
-            ],
+            matchers: matchers,
             action: {{action}}
           ))
         end

@@ -77,12 +77,16 @@ module Tjeneste
     end
 
     class TerminalNode < Node
-      class EmptyHandler < HTTP::Handler
+      class EmptyHandler
+        include HTTP::Handler
+
         def call(ctx : HTTP::Server::Context)
           ctx.response.puts "EmptyHandler"
           ctx.response.status_code = 200
         end
       end
+
+      EMPTY_HANDLER = EmptyHandler.new
 
       getter action : Action | HTTP::Handler | HttpBlock
 
@@ -92,7 +96,7 @@ module Tjeneste
 
       def initialize(
                      matchers = [] of Matcher,
-                     @action : HTTP::Handler | HttpBlock = EmptyHandler.new)
+                     @action : HTTP::Handler | HttpBlock = EMPTY_HANDLER)
         super(matchers)
       end
 
