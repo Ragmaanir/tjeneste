@@ -34,6 +34,7 @@ module Tjeneste
       end
 
       def current_segment
+        raise "Index #{path_index} too big for: #{segments}" if path_index >= segments.size
         segments[path_index]
       end
 

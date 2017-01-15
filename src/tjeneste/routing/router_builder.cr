@@ -118,11 +118,11 @@ module Tjeneste
       end
 
       macro path(name, &block)
-        node = Tjeneste::Routing::InnerNode.new(matchers: [Tjeneste::Routing::PathMatcher.new({{name}})])
-        node_stack << node
+        %node = Tjeneste::Routing::InnerNode.new(matchers: [Tjeneste::Routing::PathMatcher.new({{name}})])
+        node_stack << %node
         build_block {{block}}
         node_stack.pop
-        append_child(node)
+        append_child(%node)
       end
     end
   end

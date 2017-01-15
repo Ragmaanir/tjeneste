@@ -29,28 +29,28 @@ module Tjeneste
       end
 
       private def match_internally(matcher : String, request : RoutingState) : MatchResult
-        if request.current_segment == matcher
+        if request.remaining_segments? && request.current_segment == matcher
           MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          MatchFailure.new("#{matcher} != #{request.current_segment}")
+          MatchFailure.new("#{matcher} != #{request.inspect}")
         end
       end
 
       private def match_internally(matcher : Regex, request : RoutingState) : MatchResult
-        if m = matcher.match(request.current_segment)
+        if request.remaining_segments? && (m = matcher.match(request.current_segment))
           MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          MatchFailure.new("#{matcher.source} != #{request.current_segment}")
+          MatchFailure.new("#{matcher.source} != #{request.inspect}")
         end
       end
 
       private def match_internally(matcher : Symbol, request : RoutingState) : MatchResult
         predef = PREDEFINED_MATCHERS[matcher]
 
-        if m = predef.match(request.current_segment)
+        if request.remaining_segments? && (m = predef.match(request.current_segment))
           MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
         else
-          MatchFailure.new("#{predef.source} != #{request.current_segment}")
+          MatchFailure.new("#{predef.source} != #{request.inspect}")
         end
       end
 

@@ -51,44 +51,36 @@ describe Tjeneste::Routing::Router do
 
     assert results == ["create", "show", "root"]
   end
-
-  # test "" do
-  #   router = Tjeneste::Routing::RouterBuilder.build do
-  #     path "topics" do
-  #       get "", Endpoints::Topics::Index.new
-  #     end
-
-  #     get "", HomeAction.new
-  #   end
-  # end
 end
 
-describe "XXX" do
+describe "Routing" do
   def route_for(router, method, path)
-    puts
-    puts "#{method} #{path}"
     req = HTTP::Request.new(method, path)
-
     router.route(req)
   end
 
-  test! "" do
+  test "different routes" do
     router = Tjeneste::Routing::RouterBuilder.build do
-      get "" do
-      end
-
+      get "", Tjeneste::EmptyBlock
       path "topics" do
-        get :int do
+        get :int, Tjeneste::EmptyBlock
+        put :int, Tjeneste::EmptyBlock
+
+        path "comments" do
+          get "", Tjeneste::EmptyBlock
+          post "", Tjeneste::EmptyBlock
+          get :int, Tjeneste::EmptyBlock
         end
       end
     end
 
     assert route_for(router, "GET", "/")
-    assert route_for(router, "GET", "/topics") == nil
-    assert route_for(router, "GET", "/topics/1")
+    assert route_for(router, "GET", "/topics/556")
+    assert route_for(router, "PUT", "/topics/1337")
 
-    # route = route_for(router, "GET", "/topics")
-    # assert route.action.is_a?(Tjeneste::HttpBlock)
+    assert route_for(router, "GET", "/topics/comments")
+    assert route_for(router, "POST", "/topics/comments")
+    assert route_for(router, "GET", "/topics/comments/45567")
   end
 end
 

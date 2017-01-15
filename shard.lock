@@ -6,9 +6,13 @@ shards:
 
   kontrakt:
     github: ragmaanir/kontrakt
-    version: 0.2.3
+    version: 0.3.0
 
   microtest:
     github: ragmaanir/microtest
-    commit: 4cfb78a13b990d0c511e7c64ff8bc46c73143381
+    commit: 5380feba61a8dd8ed6168da03d4f4c1b7ef7ebaf
+
+  regnbue:
+    github: ragmaanir/regnbue
+    commit: 5efbd2035adb197fb2ac4d1c7fee7de2fa97eccd
 

@@ -14,7 +14,8 @@ module Tjeneste
         output = [] of String
 
         router.traverse_depth_first do |node|
-          indentation = "  "*(node.depth - 1)
+          indentation = "  "*node.depth
+
           case node
           when InnerNode
             matchers = stringify_matchers(node.matchers)
@@ -24,8 +25,8 @@ module Tjeneste
             matchers = stringify_matchers(node.matchers)
             matchers = " #{matchers}" if matchers.size > 0
             output << "#{indentation}TerminalNode:#{matchers}"
+          else raise "not handled"
           end
-          nil
         end
 
         output.join("\n")

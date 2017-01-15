@@ -3,6 +3,8 @@ version: 0.2.0
 authors:
   - Ragmaanir <ragmaanir@gmail.com>
 
+license: MIT
+
 dependencies:
   kontrakt:
     github: ragmaanir/kontrakt
@@ -15,5 +17,3 @@ development_dependencies:
   microtest:
     github: ragmaanir/microtest
     branch: master
-
-license: MIT
