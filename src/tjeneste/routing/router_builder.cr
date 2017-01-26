@@ -74,14 +74,14 @@ module Tjeneste
           v = verb.downcase
           code = "
         macro #{v.id}(name, action)
-          name = {{name}}
+          %name = {{name}}
 
-          matchers = [] of Tjeneste::Routing::Matcher
-          matchers << Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id})
-          matchers << Tjeneste::Routing::PathMatcher.new(name) unless name.is_a?(String) && name.to_s.empty?
+          %matchers = [] of Tjeneste::Routing::Matcher
+          %matchers << Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id})
+          %matchers << Tjeneste::Routing::PathMatcher.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
 
           append_child(Tjeneste::Routing::TerminalNode.new(
-            matchers: matchers,
+            matchers: %matchers,
             action: {{action}}
           ))
         end
@@ -113,7 +113,8 @@ module Tjeneste
       macro mount(name, action)
         append_child(Tjeneste::Routing::TerminalNode.new(
           matchers: [Tjeneste::Routing::PathMatcher.new({{name}})],
-          action: {{action}}
+          action: {{action}},
+          ignore_remainder: true
         ))
       end
 

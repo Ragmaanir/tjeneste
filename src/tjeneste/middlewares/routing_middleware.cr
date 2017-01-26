@@ -12,9 +12,10 @@ module Tjeneste
         if route
           action = route.action
           case action
-          when HTTP::Handler then action.call(context)
-          when Action        then action.call_wrapper(context)
-          else                    raise("Invalid action type")
+          when HTTP::Handler       then action.call(context)
+          when Tjeneste::HttpBlock then action.call(context)
+          when Action              then action.call_wrapper(context)
+          else                          raise("Invalid action type #{action.class}")
           end
         else
           context.response.status_code = 404

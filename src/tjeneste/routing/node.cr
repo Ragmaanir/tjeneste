@@ -1,7 +1,7 @@
 module Tjeneste
   module Routing
     abstract class Node
-      property parent : Node?
+      property parent : InnerNode?
       getter matchers : Array(Matcher)
 
       def initialize(matchers = [] of Matcher)
@@ -42,6 +42,10 @@ module Tjeneste
 
       def ==(other : Node)
         matchers == other.matchers
+      end
+
+      def compact_s
+        "#{self.class.name.split("::").last}(#{matchers.map(&.to_s)})"
       end
     end
 
@@ -90,14 +94,19 @@ module Tjeneste
 
       getter action : Action | HTTP::Handler | HttpBlock
 
-      def initialize(matchers : Array(Matcher), @action : Action)
+      def initialize(matchers : Array(Matcher), @action : Action, @ignore_remainder : Bool = false)
         super(matchers)
       end
 
       def initialize(
                      matchers = [] of Matcher,
-                     @action : HTTP::Handler | HttpBlock = EMPTY_HANDLER)
+                     @action : HTTP::Handler | HttpBlock = EMPTY_HANDLER,
+                     @ignore_remainder : Bool = false)
         super(matchers)
+      end
+
+      def ignore_remainder?
+        @ignore_remainder
       end
 
       def ==(other : TerminalNode)

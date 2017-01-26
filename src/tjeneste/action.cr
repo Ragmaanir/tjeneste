@@ -5,6 +5,14 @@ module Tjeneste
     class ValidationError < Exception
     end
 
+    class Error < Exception
+      getter value : String
+      getter message : String?
+
+      def initialize(@value, @message)
+      end
+    end
+
     module MIME
       HTML = "text/html; charset=utf-8"
       JSON = "application/json"
@@ -107,18 +115,32 @@ module Tjeneste
       macro validations(&block)
         def validate : ValidationResult
           res = [] of ExpressionResult
-          {% for e, i in block.body.expressions %}
+
+          {% if block.body.is_a?(Expressions) %}
+            {% for e, i in block.body.expressions %}
+              res << ExpressionResult.new(({{e}}), "{{e}}")
+            {% end %}
+          {% else %}
+            {% e = block.body %}
             res << ExpressionResult.new(({{e}}), "{{e}}")
           {% end %}
+
           ValidationResult.new(res)
         end
 
         def expressions
           if !@expressions
             exps = [] of String
-            {% for e, i in block.body.expressions %}
+
+            {% if block.body.is_a?(Expressions) %}
+              {% for e, i in block.body.expressions %}
+                exps << "{{e}}"
+              {% end %}
+            {% else %}
+              {% e = block.body %}
               exps << "{{e}}"
             {% end %}
+
             @expressions = exps
           end
           @expressions
@@ -137,16 +159,24 @@ module Tjeneste
       end
 
       macro mapping(hash)
+        {% for name, type in hash %}
+          getter {{name}} : {{type}}
+        {% end %}
+
         def initialize(input : HTTP::Params)
-          specification.map do |name,kind|
-            value = input[name]
-            case kind
-            when Int32 then value.first.to_i32(whitespace: false) { Error.new(value, "Is not an integer") }
-            when Float32 then value.first.to_f32(whitespace: false) { Error.new(value, "Is not a float") }
-            when DateTime
-            when String
-            end
-          end
+          {% for name, kind in hash %}
+            value = input["{{name}}"]
+            {%
+              t = kind.stringify
+              assignment = {
+                "Int32"   => "value.to_i32(whitespace: false)",
+                "Float32" => "value.to_f32(whitespace: false)",
+                "Time"    => "value",
+                "String"  => "value",
+              }[kind.stringify] || "value"
+            %}
+            @{{name}} = {{assignment.id}}
+          {% end %}
         end
 
         def specification

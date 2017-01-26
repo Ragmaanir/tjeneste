@@ -82,6 +82,66 @@ describe "Routing" do
     assert route_for(router, "POST", "/topics/comments")
     assert route_for(router, "GET", "/topics/comments/45567")
   end
+
+  test "mounting" do
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "public" do
+        mount "assets", ->(ctx : HTTP::Server::Context) { puts "asset!" }
+      end
+    end
+
+    assert route_for(router, "GET", "/public/assets/images/myimage.jpg")
+    assert route_for(router, "GET", "/public") == nil
+  end
+
+  # test! "path parameters" do
+  #   router = Tjeneste::Routing::RouterBuilder.build do
+  #     path "topics" do
+  #       get :id, //, action_a
+  #     end
+
+  #     get "", action_b
+  #   end
+  # end
+
+  test "router uses depth first search" do
+    actions = [] of Symbol
+    action_a = ->(ctx : HTTP::Server::Context) { actions << :action_a; nil }
+    action_b = ->(ctx : HTTP::Server::Context) { actions << :action_b; nil }
+
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "topics" do
+        get "", action_a
+      end
+
+      get "", action_b
+    end
+
+    # puts Tjeneste::Routing::RouterPrinter.print(router)
+
+    # r1 = route_for(router, "GET", "/topics").not_nil!
+    # r2 = route_for(router, "GET", "/").not_nil!
+
+    # puts "-"
+    # router.traverse_depth_first do |node|
+    #   puts [
+    #     "  " * node.depth,
+    #     node.object_id.to_s,
+    #     node.parent.object_id,
+    #     node.compact_s,
+    #     (node.action.inspect if node.is_a?(Tjeneste::Routing::TerminalNode)),
+    #   ].join(" ")
+    # end
+    # puts "-"
+
+    req = HTTP::Request.new("GET", "/topics")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
+
+    m = Tjeneste::Middlewares::RoutingMiddleware.new(router)
+    m.call(ctx)
+
+    assert actions == [:action_a]
+  end
 end
 
 describe "Actions" do

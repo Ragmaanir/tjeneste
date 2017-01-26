@@ -21,20 +21,20 @@ module Tjeneste
       end
 
       def root
-        # @internal_root.children.first
         @internal_root
       end
 
       def route(request : HTTP::Request) : Route?
         node_path = [] of Node
         state = RoutingState.new(request)
-        # reqs = [req] of RoutingState
 
         queue = [@internal_root]
 
         while node = queue.shift?
           # puts [
+          #   node.object_id,
           #   node.depth,
+          #   queue.map(&.object_id),
           #   node.class.name.sub(/Tjeneste::Routing::/, ""),
           #   state.inspect,
           #   state.remaining_segments?,
@@ -43,7 +43,7 @@ module Tjeneste
           case node
           when TerminalNode
             if next_state = node.match(state)
-              if !next_state.remaining_segments?
+              if node.ignore_remainder? || !next_state.remaining_segments?
                 node_path << node
                 return Route.new(node_path, node.action)
               end
@@ -52,7 +52,7 @@ module Tjeneste
             if next_state = node.match(state)
               state = next_state
               node_path << node
-              queue += node.children
+              queue = node.children + queue
             end
           else raise "unknown node type"
           end

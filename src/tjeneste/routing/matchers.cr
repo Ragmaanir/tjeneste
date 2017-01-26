@@ -9,6 +9,27 @@ module Tjeneste
       HEAD   = 6
     end
 
+    # what is supposed to happen when:
+    #
+    # path "users" do
+    #   get id: :int
+    # end
+    #
+    # /users/15?id=16
+    #
+    # => id will be 15
+    abstract class PathCapture
+      getter name : String
+
+      def initialize(@name : String)
+      end
+    end
+
+    class RegexPathCapture < PathCapture
+      def initialize(@name : String, @regex : Regex)
+      end
+    end
+
     abstract class Matcher
       abstract def match(request : RoutingState) : RoutingState?
       abstract def ==(other : Matcher)
@@ -17,6 +38,7 @@ module Tjeneste
     class PathMatcher < Matcher
       PREDEFINED_MATCHERS = {
         int: /\A\d+\z/,
+        id:  /\A\d+\z/,
       }
 
       getter matcher
@@ -30,17 +52,17 @@ module Tjeneste
 
       private def match_internally(matcher : String, request : RoutingState) : MatchResult
         if request.remaining_segments? && request.current_segment == matcher
-          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
+          match_success(request)
         else
-          MatchFailure.new("#{matcher} != #{request.inspect}")
+          match_failure(matcher, request.inspect)
         end
       end
 
       private def match_internally(matcher : Regex, request : RoutingState) : MatchResult
         if request.remaining_segments? && (m = matcher.match(request.current_segment))
-          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
+          match_success(request)
         else
-          MatchFailure.new("#{matcher.source} != #{request.inspect}")
+          match_failure(matcher.source, request.inspect)
         end
       end
 
@@ -48,10 +70,18 @@ module Tjeneste
         predef = PREDEFINED_MATCHERS[matcher]
 
         if request.remaining_segments? && (m = predef.match(request.current_segment))
-          MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
+          match_success(request)
         else
-          MatchFailure.new("#{predef.source} != #{request.inspect}")
+          match_failure(predef.source, request.inspect)
         end
+      end
+
+      private def match_success(request : RoutingState)
+        MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
+      end
+
+      private def match_failure(left : String, right : String)
+        MatchFailure.new("#{left} != #{right}")
       end
 
       def ==(other : PathMatcher) : Bool
