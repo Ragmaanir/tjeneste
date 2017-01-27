@@ -48,12 +48,12 @@ module Tjeneste
       end
     end
 
-    abstract class Matcher
+    abstract class RoutingConstraint
       abstract def match(request : RoutingState) : RoutingState?
       abstract def ==(other : Matcher)
     end
 
-    class PathMatcher < Matcher
+    class PathRoutingConstraint < RoutingConstraint
       alias MatcherClasses = String | Regex | Symbol | PathConstraint
       PREDEFINED_MATCHERS = {
         int: /\A\d+\z/,
@@ -111,7 +111,7 @@ module Tjeneste
         MatchFailure.new("#{left} != #{right}")
       end
 
-      def ==(other : PathMatcher) : Bool
+      def ==(other : PathRoutingConstraint) : Bool
         @matcher == other.matcher
       end
 
@@ -124,7 +124,7 @@ module Tjeneste
       end
     end
 
-    class VerbMatcher < Matcher
+    class VerbRoutingConstraint < RoutingConstraint
       getter verb : Verb
 
       def initialize(@verb)
@@ -138,7 +138,7 @@ module Tjeneste
         end
       end
 
-      def ==(other : VerbMatcher) : Bool
+      def ==(other : VerbRoutingConstraint) : Bool
         @verb == other.verb
       end
 

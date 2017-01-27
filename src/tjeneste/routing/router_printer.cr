@@ -18,13 +18,13 @@ module Tjeneste
 
           case node
           when InnerNode
-            matchers = stringify_matchers(node.matchers)
-            matchers = " #{matchers}" if matchers.size > 0
-            output << "#{indentation}InnerNode:#{matchers}"
+            constraints = stringify_constraints(node.constraints)
+            constraints = " #{constraints}" if constraints.size > 0
+            output << "#{indentation}InnerNode:#{constraints}"
           when TerminalNode
-            matchers = stringify_matchers(node.matchers)
-            matchers = " #{matchers}" if matchers.size > 0
-            output << "#{indentation}TerminalNode:#{matchers}"
+            constraints = stringify_constraints(node.constraints)
+            constraints = " #{constraints}" if constraints.size > 0
+            output << "#{indentation}TerminalNode:#{constraints}"
           else raise "not handled"
           end
         end
@@ -32,11 +32,11 @@ module Tjeneste
         output.join("\n")
       end
 
-      private def stringify_matchers(matchers : Array(Matcher)) : String
-        matchers.map do |m|
+      private def stringify_constraints(constraints : Array(RoutingConstraint)) : String
+        constraints.map do |m|
           case m
-          when PathMatcher then m.matcher.inspect
-          when VerbMatcher then m.verb
+          when PathRoutingConstraint then m.matcher.inspect
+          when VerbRoutingConstraint then m.verb
           end
         end.join(" ")
       end

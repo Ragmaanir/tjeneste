@@ -1,13 +1,15 @@
 require "./../spec_helper"
 
 describe Tjeneste::Routing::RouterBuilder do
-  InnerNode    = Tjeneste::Routing::InnerNode
-  TerminalNode = Tjeneste::Routing::TerminalNode
-  VerbMatcher  = Tjeneste::Routing::VerbMatcher
-  PathMatcher  = Tjeneste::Routing::PathMatcher
+  InnerNode      = Tjeneste::Routing::InnerNode
+  TerminalNode   = Tjeneste::Routing::TerminalNode
+  VerbConstraint = Tjeneste::Routing::VerbRoutingConstraint
+  PathConstraint = Tjeneste::Routing::PathRoutingConstraint
 
-  GetMatcher  = VerbMatcher.new(Tjeneste::Routing::Verb::GET)
-  PostMatcher = VerbMatcher.new(Tjeneste::Routing::Verb::POST)
+  GetConstraint  = VerbConstraint.new(Tjeneste::Routing::Verb::GET)
+  PostConstraint = VerbConstraint.new(Tjeneste::Routing::Verb::POST)
+
+  NO_CONSTRAINTS = [] of Tjeneste::Routing::RoutingConstraint
 
   class MyHandler
     include HTTP::Handler
@@ -21,7 +23,7 @@ describe Tjeneste::Routing::RouterBuilder do
     end
   end
 
-  test "generates nested routes with appropriate matchers" do
+  test "generates nested routes with appropriate constraints" do
     handler = MyHandler.new
 
     router = Tjeneste::Routing::RouterBuilder.build do
@@ -34,14 +36,14 @@ describe Tjeneste::Routing::RouterBuilder do
     assert router.is_a?(Tjeneste::Routing::Router)
 
     routing_tree = InnerNode.new(
-      matchers: [] of Tjeneste::Routing::Matcher,
+      constraints: NO_CONSTRAINTS,
       children: [
         InnerNode.new(
-          matchers: [PathMatcher.new("users")],
+          constraints: [PathConstraint.new("users")],
           children: [
             TerminalNode.new(
-              matchers: [
-                GetMatcher,
+              constraints: [
+                GetConstraint,
               ],
               action: handler
             ),
@@ -68,39 +70,39 @@ describe Tjeneste::Routing::RouterBuilder do
     end
 
     routing_tree = InnerNode.new(
-      matchers: [] of Tjeneste::Routing::Matcher,
+      constraints: NO_CONSTRAINTS,
       children: [
         TerminalNode.new(
-          matchers: [
-            GetMatcher,
+          constraints: [
+            GetConstraint,
           ],
           action: Tjeneste::EmptyBlock
         ),
         InnerNode.new(
-          matchers: [PathMatcher.new("topics")],
+          constraints: [PathConstraint.new("topics")],
           children: [
             TerminalNode.new(
-              matchers: [
-                GetMatcher,
-                PathMatcher.new(:int),
+              constraints: [
+                GetConstraint,
+                PathConstraint.new(:int),
               ],
               action: Tjeneste::EmptyBlock
             ),
             InnerNode.new(
-              matchers: [PathMatcher.new("comments")],
+              constraints: [PathConstraint.new("comments")],
               children: [
                 TerminalNode.new(
-                  matchers: [GetMatcher],
+                  constraints: [GetConstraint],
                   action: Tjeneste::EmptyBlock
                 ),
                 TerminalNode.new(
-                  matchers: [PostMatcher],
+                  constraints: [PostConstraint],
                   action: Tjeneste::EmptyBlock
                 ),
                 TerminalNode.new(
-                  matchers: [
-                    GetMatcher,
-                    PathMatcher.new(:int),
+                  constraints: [
+                    GetConstraint,
+                    PathConstraint.new(:int),
                   ],
                   action: Tjeneste::EmptyBlock
                 ),
@@ -121,11 +123,11 @@ describe Tjeneste::Routing::RouterBuilder do
     end
 
     routing_tree = InnerNode.new(
-      matchers: [] of Matcher,
+      constraints: NO_CONSTRAINTS,
       children: [
         TerminalNode.new(
-          matchers: [
-            PathMatcher.new(""),
+          constraints: [
+            PathConstraint.new(""),
           ],
           action: handler
         ),

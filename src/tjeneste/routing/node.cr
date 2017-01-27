@@ -2,11 +2,11 @@ module Tjeneste
   module Routing
     abstract class Node
       property parent : InnerNode?
-      getter matchers : Array(Matcher)
+      getter constraints : Array(RoutingConstraint)
 
-      def initialize(matchers = [] of Matcher)
-        @matchers = [] of Matcher
-        matchers.each { |m| @matchers << m }
+      def initialize(constraints = [] of RoutingConstraint)
+        @constraints = [] of RoutingConstraint
+        constraints.each { |m| @constraints << m }
       end
 
       def root?
@@ -31,7 +31,7 @@ module Tjeneste
       def match(request : RoutingState) : RoutingState?
         results = [] of MatchResult
 
-        all_match = matchers.all? do |m|
+        all_match = constraints.all? do |m|
           res = m.match(request)
           results << res
           case res
@@ -45,11 +45,11 @@ module Tjeneste
       # abstract def to_s : String
 
       def ==(other : Node)
-        matchers == other.matchers
+        constraints == other.constraints
       end
 
       def compact_s
-        "#{self.class.name.split("::").last}(#{matchers.map(&.to_s)})"
+        "#{self.class.name.split("::").last}(#{constraints.map(&.to_s)})"
       end
     end
 
@@ -57,9 +57,9 @@ module Tjeneste
       getter children : Array(Node)
 
       def initialize(
-                     matchers = [] of Matcher,
+                     constraints = [] of RoutingConstraint,
                      children = [] of Node)
-        super(matchers)
+        super(constraints)
         @children = [] of Node
         children.each { |c| @children << c }
         @children.each { |c| c.parent = self }
@@ -74,9 +74,9 @@ module Tjeneste
       end
 
       def to_s(io : IO)
-        m = matchers.map(&.to_s).join(", ")
+        m = constraints.map(&.to_s).join(", ")
         c = children.map { |c| "#{c}" }.join(",")
-        io << "Node(matchers: [#{m}], children: [#{c}])"
+        io << "Node(constraints: [#{m}], children: [#{c}])"
       end
 
       def inspect(io : IO)
@@ -98,15 +98,15 @@ module Tjeneste
 
       getter action : Action | HTTP::Handler | HttpBlock
 
-      def initialize(matchers : Array(Matcher), @action : Action, @ignore_remainder : Bool = false)
-        super(matchers)
+      def initialize(constraints : Array(RoutingConstraint), @action : Action, @ignore_remainder : Bool = false)
+        super(constraints)
       end
 
       def initialize(
-                     matchers = [] of Matcher,
+                     constraints = [] of RoutingConstraint,
                      @action : HTTP::Handler | HttpBlock = EMPTY_HANDLER,
                      @ignore_remainder : Bool = false)
-        super(matchers)
+        super(constraints)
       end
 
       def ignore_remainder?
@@ -122,8 +122,8 @@ module Tjeneste
       end
 
       def to_s(io : IO)
-        m = matchers.map(&.to_s).join(", ")
-        io << "TerminalNode(matchers: [#{m}], action: #{action})"
+        m = constraints.map(&.to_s).join(", ")
+        io << "TerminalNode(constraints: [#{m}], action: #{action})"
       end
 
       def inspect(io : IO)

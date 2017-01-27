@@ -6,21 +6,21 @@ describe Tjeneste::Routing::RouterPrinter do
   test "prints multiple nodes as a tree" do
     root = InnerNode.new(children: [
       TN.new(
-        matchers: [
-          VerbMatcher.new(Tjeneste::Routing::Verb::POST),
-          PathMatcher.new("users/"),
-        ] of Matcher
+        constraints: [
+          VerbRoutingConstraint.new(Tjeneste::Routing::Verb::POST),
+          PathRoutingConstraint.new("users/"),
+        ] of RoutingConstraint
       ),
       InnerNode.new(
-        matchers: [
-          PathMatcher.new("topics/"),
-        ] of Matcher,
+        constraints: [
+          PathRoutingConstraint.new("topics/"),
+        ] of RoutingConstraint,
         children: [
           TN.new(
-            matchers: [
-              VerbMatcher.new(Tjeneste::Routing::Verb::GET),
-              PathMatcher.new(:int),
-            ] of Matcher
+            constraints: [
+              VerbRoutingConstraint.new(Tjeneste::Routing::Verb::GET),
+              PathRoutingConstraint.new(:int),
+            ] of RoutingConstraint
           ),
         ] of Tjeneste::Routing::Node
       ),

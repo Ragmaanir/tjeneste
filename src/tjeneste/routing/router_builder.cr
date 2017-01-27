@@ -49,7 +49,7 @@ module Tjeneste
 
       def initialize
         # @root = InnerNode.new(matchers: [PathMatcher.new("/")])
-        @root = InnerNode.new(matchers: [] of Matcher)
+        @root = InnerNode.new(constraints: [] of RoutingConstraint)
         @node_stack = [@root] of InnerNode
       end
 
@@ -76,12 +76,12 @@ module Tjeneste
         macro #{v.id}(name, action)
           %name = {{name}}
 
-          %matchers = [] of Tjeneste::Routing::Matcher
-          %matchers << Tjeneste::Routing::VerbMatcher.new(Tjeneste::Routing::Verb::#{verb.id})
-          %matchers << Tjeneste::Routing::PathMatcher.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
+          %constraints = [] of Tjeneste::Routing::RoutingConstraint
+          %constraints << Tjeneste::Routing::VerbRoutingConstraint.new(Tjeneste::Routing::Verb::#{verb.id})
+          %constraints << Tjeneste::Routing::PathRoutingConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
 
           append_child(Tjeneste::Routing::TerminalNode.new(
-            matchers: %matchers,
+            constraints: %constraints,
             action: {{action}}
           ))
         end
@@ -112,14 +112,14 @@ module Tjeneste
 
       macro mount(name, action)
         append_child(Tjeneste::Routing::TerminalNode.new(
-          matchers: [Tjeneste::Routing::PathMatcher.new({{name}})],
+          constraints: [Tjeneste::Routing::PathRoutingConstraint.new({{name}})],
           action: {{action}},
           ignore_remainder: true
         ))
       end
 
       macro path(name, &block)
-        %node = Tjeneste::Routing::InnerNode.new(matchers: [Tjeneste::Routing::PathMatcher.new({{name}})])
+        %node = Tjeneste::Routing::InnerNode.new(constraints: [Tjeneste::Routing::PathRoutingConstraint.new({{name}})])
         node_stack << %node
         build_block {{block}}
         node_stack.pop
