@@ -14,9 +14,6 @@ module Tjeneste
       getter logger : Logger
 
       def initialize(root_node : Node, @logger = Logger.new(STDOUT))
-        # The root nodes matchers are not checked in #route, therefore
-        # the passed root node has to be wrapped.
-        # @internal_root = InnerNode.new(children: [root_node] of Node)
         @internal_root = root_node
       end
 
@@ -25,36 +22,32 @@ module Tjeneste
       end
 
       def route(request : HTTP::Request) : Route?
-        node_path = [] of Node
         state = RoutingState.new(request)
 
-        queue = [@internal_root]
+        children = [@internal_root]
 
-        while node = queue.shift?
+        while node = children.shift?
           # puts [
           #   node.object_id,
           #   node.depth,
-          #   queue.map(&.object_id),
           #   node.class.name.sub(/Tjeneste::Routing::/, ""),
           #   state.inspect,
           #   state.remaining_segments?,
           #   node.matchers.map { |m| m.to_s },
+          #   children.map(&.object_id),
           # ].join(" - ")
-          case node
-          when TerminalNode
-            if next_state = node.match(state)
+
+          if next_state = node.match(state)
+            case node
+            when TerminalNode
               if node.ignore_remainder? || !next_state.remaining_segments?
-                node_path << node
-                return Route.new(node_path, node.action)
+                return Route.new(node.path, node.action)
               end
-            end
-          when InnerNode
-            if next_state = node.match(state)
+            when InnerNode
               state = next_state
-              node_path << node
-              queue = node.children + queue
+              children = node.children.dup
+            else raise "unknown node type"
             end
-          else raise "unknown node type"
           end
         end
       end

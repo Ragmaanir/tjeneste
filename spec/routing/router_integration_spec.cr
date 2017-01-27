@@ -117,23 +117,6 @@ describe "Routing" do
       get "", action_b
     end
 
-    # puts Tjeneste::Routing::RouterPrinter.print(router)
-
-    # r1 = route_for(router, "GET", "/topics").not_nil!
-    # r2 = route_for(router, "GET", "/").not_nil!
-
-    # puts "-"
-    # router.traverse_depth_first do |node|
-    #   puts [
-    #     "  " * node.depth,
-    #     node.object_id.to_s,
-    #     node.parent.object_id,
-    #     node.compact_s,
-    #     (node.action.inspect if node.is_a?(Tjeneste::Routing::TerminalNode)),
-    #   ].join(" ")
-    # end
-    # puts "-"
-
     req = HTTP::Request.new("GET", "/topics")
     ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
 

@@ -9,6 +9,9 @@ module Tjeneste
       HEAD   = 6
     end
 
+    class PathBinding
+    end
+
     # what is supposed to happen when:
     #
     # path "users" do
@@ -18,15 +21,30 @@ module Tjeneste
     # /users/15?id=16
     #
     # => id will be 15
-    abstract class PathCapture
+    abstract class PathConstraint
       getter name : String
 
       def initialize(@name : String)
       end
+
+      abstract def match(str : String)
+      abstract def source : String
     end
 
-    class RegexPathCapture < PathCapture
+    class RegexPathConstraint < PathConstraint
+      getter regex : Regex
+
       def initialize(@name : String, @regex : Regex)
+      end
+
+      def match(str : String)
+        if res = regex.match(str)
+          {name => res[0]}
+        end
+      end
+
+      def source
+        regex.source
       end
     end
 
@@ -36,6 +54,7 @@ module Tjeneste
     end
 
     class PathMatcher < Matcher
+      alias MatcherClasses = String | Regex | Symbol | PathConstraint
       PREDEFINED_MATCHERS = {
         int: /\A\d+\z/,
         id:  /\A\d+\z/,
@@ -43,7 +62,7 @@ module Tjeneste
 
       getter matcher
 
-      def initialize(@matcher : String | Regex | Symbol)
+      def initialize(@matcher : MatcherClasses)
       end
 
       def match(request : RoutingState)
@@ -73,6 +92,14 @@ module Tjeneste
           match_success(request)
         else
           match_failure(predef.source, request.inspect)
+        end
+      end
+
+      private def match_internally(matcher : PathConstraint, request : RoutingState) : MatchResult
+        if request.remaining_segments? && (m = matcher.match(request.current_segment))
+          match_success(request)
+        else
+          match_failure(matcher.source, request.inspect)
         end
       end
 

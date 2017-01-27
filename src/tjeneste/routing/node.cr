@@ -13,15 +13,19 @@ module Tjeneste
         parent == nil
       end
 
-      def depth : Int
+      def path : Array(Node)
+        nodes = [] of Node
         node = parent
-        i = 0
         while node
-          i += 1
+          nodes.unshift(node)
           node = node.parent
         end
 
-        i
+        nodes
+      end
+
+      def depth : Int
+        path.size
       end
 
       def match(request : RoutingState) : RoutingState?
