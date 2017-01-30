@@ -14,7 +14,7 @@ describe Tjeneste::Routing::Router do
           results << "create"
           ctx.response.status_code = 200
         end
-        get :int do |ctx|
+        get({id: /\d+/}) do |ctx|
           results << "show"
           ctx.response.status_code = 200
         end
@@ -63,13 +63,13 @@ describe "Routing" do
     router = Tjeneste::Routing::RouterBuilder.build do
       get "", Tjeneste::EmptyBlock
       path "topics" do
-        get :int, Tjeneste::EmptyBlock
-        put :int, Tjeneste::EmptyBlock
+        get({id: /\d+/}, Tjeneste::EmptyBlock)
+        put({id: /\d+/}, Tjeneste::EmptyBlock)
 
         path "comments" do
           get "", Tjeneste::EmptyBlock
           post "", Tjeneste::EmptyBlock
-          get :int, Tjeneste::EmptyBlock
+          get({id: /\d+/}, Tjeneste::EmptyBlock)
         end
       end
     end
@@ -94,15 +94,35 @@ describe "Routing" do
     assert route_for(router, "GET", "/public") == nil
   end
 
-  # test! "path parameters" do
-  #   router = Tjeneste::Routing::RouterBuilder.build do
-  #     path "topics" do
-  #       get :id, //, action_a
-  #     end
+  test "path parameters" do
+    invocations = [] of String
+    # action = ->(ctx : HTTP::Server::Context) {
+    #   invocations << ctx.params["id"]
+    #   nil
+    # }
 
-  #     get "", action_b
-  #   end
-  # end
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "topics" do
+        get({id: /\d/}) do |ctx|
+          # invocations << ctx.request.query_params["id"]
+          invocations << [ctx.request.path, ctx.request.query].join
+          nil
+        end
+      end
+    end
+
+    m = Tjeneste::Middlewares::RoutingMiddleware.new(router)
+
+    req = HTTP::Request.new("GET", "/topics/12345")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
+    m.call(ctx)
+
+    req = HTTP::Request.new("GET", "/topics/test")
+    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
+    m.call(ctx)
+
+    assert invocations == ["/topics/12345"]
+  end
 
   test "router uses depth first search" do
     actions = [] of Symbol

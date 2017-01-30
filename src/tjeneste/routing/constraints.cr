@@ -9,56 +9,58 @@ module Tjeneste
       HEAD   = 6
     end
 
-    class PathBinding
-    end
+    abstract class RoutingConstraint
+      abstract def match(request : RoutingState) : MatchResult
+      abstract def ==(other : RoutingConstraint)
 
-    # what is supposed to happen when:
-    #
-    # path "users" do
-    #   get id: :int
-    # end
-    #
-    # /users/15?id=16
-    #
-    # => id will be 15
-    abstract class PathConstraint
-      getter name : String
-
-      def initialize(@name : String)
+      private def match_success(request : RoutingState)
+        MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
       end
 
-      abstract def match(str : String)
-      abstract def source : String
+      private def match_failure(left : String, right : String)
+        MatchFailure.new("#{left} != #{right}")
+      end
+
+      def short_name
+        self.class.name.split("::").last # FIXME util
+      end
     end
 
-    class RegexPathConstraint < PathConstraint
+    class BindingPathConstraint < RoutingConstraint
       getter regex : Regex
+      getter name : String
 
       def initialize(@name : String, @regex : Regex)
       end
 
-      def match(str : String)
-        if res = regex.match(str)
-          {name => res[0]}
+      def match(request : RoutingState) : MatchResult
+        if request.remaining_segments? && (m = regex.match(request.current_segment))
+          # FIXME store binding somewhere
+          match_success(request)
+        else
+          match_failure(regex.source, request.inspect)
         end
       end
 
       def source
         regex.source
       end
-    end
 
-    abstract class RoutingConstraint
-      abstract def match(request : RoutingState) : RoutingState?
-      abstract def ==(other : Matcher)
+      def ==(other : BindingPathConstraint)
+        name == other.name && regex == other.regex
+      end
+
+      def ==(other)
+        false
+      end
+
+      def to_s(io : IO)
+        io << "#{short_name}(#{name}: #{regex.source})"
+      end
     end
 
     class PathRoutingConstraint < RoutingConstraint
-      alias MatcherClasses = String | Regex | Symbol | PathConstraint
-      PREDEFINED_MATCHERS = {
-        int: /\A\d+\z/,
-        id:  /\A\d+\z/,
-      }
+      alias MatcherClasses = String | Regex
 
       getter matcher
 
@@ -85,32 +87,6 @@ module Tjeneste
         end
       end
 
-      private def match_internally(matcher : Symbol, request : RoutingState) : MatchResult
-        predef = PREDEFINED_MATCHERS[matcher]
-
-        if request.remaining_segments? && (m = predef.match(request.current_segment))
-          match_success(request)
-        else
-          match_failure(predef.source, request.inspect)
-        end
-      end
-
-      private def match_internally(matcher : PathConstraint, request : RoutingState) : MatchResult
-        if request.remaining_segments? && (m = matcher.match(request.current_segment))
-          match_success(request)
-        else
-          match_failure(matcher.source, request.inspect)
-        end
-      end
-
-      private def match_success(request : RoutingState)
-        MatchSuccess.new(RoutingState.new(request, request.path_index + 1))
-      end
-
-      private def match_failure(left : String, right : String)
-        MatchFailure.new("#{left} != #{right}")
-      end
-
       def ==(other : PathRoutingConstraint) : Bool
         @matcher == other.matcher
       end
@@ -120,7 +96,7 @@ module Tjeneste
       end
 
       def to_s(io : IO)
-        io << "PathMatcher(#{matcher.inspect})"
+        io << "#{short_name}(#{matcher.inspect})"
       end
     end
 
@@ -147,7 +123,7 @@ module Tjeneste
       end
 
       def to_s(io : IO)
-        io << "VerbMatcher(#{verb})"
+        io << "#{short_name}(#{verb})"
       end
     end
   end

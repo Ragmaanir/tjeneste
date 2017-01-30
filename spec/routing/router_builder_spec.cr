@@ -59,12 +59,12 @@ describe Tjeneste::Routing::RouterBuilder do
     router = Tjeneste::Routing::RouterBuilder.build do
       get "", Tjeneste::EmptyBlock
       path "topics" do
-        get :int, Tjeneste::EmptyBlock
+        get({id: /\d+/}, Tjeneste::EmptyBlock)
 
         path "comments" do
           get "", Tjeneste::EmptyBlock
           post "", Tjeneste::EmptyBlock
-          get :int, Tjeneste::EmptyBlock
+          get({id: /\d+/}, Tjeneste::EmptyBlock)
         end
       end
     end
@@ -79,17 +79,17 @@ describe Tjeneste::Routing::RouterBuilder do
           action: Tjeneste::EmptyBlock
         ),
         InnerNode.new(
-          constraints: [PathConstraint.new("topics")],
+          constraints: [PathRoutingConstraint.new("topics")],
           children: [
             TerminalNode.new(
               constraints: [
                 GetConstraint,
-                PathConstraint.new(:int),
+                BindingPathConstraint.new("id", /\d+/),
               ],
               action: Tjeneste::EmptyBlock
             ),
             InnerNode.new(
-              constraints: [PathConstraint.new("comments")],
+              constraints: [PathRoutingConstraint.new("comments")],
               children: [
                 TerminalNode.new(
                   constraints: [GetConstraint],
@@ -102,7 +102,7 @@ describe Tjeneste::Routing::RouterBuilder do
                 TerminalNode.new(
                   constraints: [
                     GetConstraint,
-                    PathConstraint.new(:int),
+                    BindingPathConstraint.new("id", /\d+/),
                   ],
                   action: Tjeneste::EmptyBlock
                 ),

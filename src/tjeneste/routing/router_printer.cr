@@ -36,7 +36,9 @@ module Tjeneste
         constraints.map do |m|
           case m
           when PathRoutingConstraint then m.matcher.inspect
+          when BindingPathConstraint then %[{"#{m.name}" => /#{m.regex.source}/}]
           when VerbRoutingConstraint then m.verb
+          else                            raise "unhandled constraint: #{m}"
           end
         end.join(" ")
       end

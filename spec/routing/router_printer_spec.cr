@@ -19,7 +19,7 @@ describe Tjeneste::Routing::RouterPrinter do
           TN.new(
             constraints: [
               VerbRoutingConstraint.new(Tjeneste::Routing::Verb::GET),
-              PathRoutingConstraint.new(:int),
+              BindingPathConstraint.new("id", /\d+/),
             ] of RoutingConstraint
           ),
         ] of Tjeneste::Routing::Node
@@ -31,7 +31,7 @@ describe Tjeneste::Routing::RouterPrinter do
     InnerNode:
       TerminalNode: POST "users/"
       InnerNode: "topics/"
-        TerminalNode: GET :int
+        TerminalNode: GET {"id" => /\\d+/}
     TREE
 
     assert RouterPrinter.print(router) == tree

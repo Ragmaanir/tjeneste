@@ -72,28 +72,36 @@ module Tjeneste
       {% for verb in Verb.constants %}
         {%
           v = verb.downcase
-          code = "
-        macro #{v.id}(name, action)
-          %name = {{name}}
+          code = <<-CRYSTAL
+          macro #{v.id}(name, action)
+            %constraints = [] of Tjeneste::Routing::RoutingConstraint
 
-          %constraints = [] of Tjeneste::Routing::RoutingConstraint
-          %constraints << Tjeneste::Routing::VerbRoutingConstraint.new(Tjeneste::Routing::Verb::#{verb.id})
-          %constraints << Tjeneste::Routing::PathRoutingConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
+            %constraints << Tjeneste::Routing::VerbRoutingConstraint.new(Tjeneste::Routing::Verb::#{verb.id})
 
-          append_child(Tjeneste::Routing::TerminalNode.new(
-            constraints: %constraints,
-            action: {{action}}
-          ))
-        end
+            {% if name.is_a?(NamedTupleLiteral) %}
+              %constraints << Tjeneste::Routing::BindingPathConstraint.new(
+                name: {{name.keys.first.stringify}},
+                regex: {{name.values.first}}
+              )
+            {% else %}
+              %name = {{name}}
+              %constraints << Tjeneste::Routing::PathRoutingConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
+            {% end %}
 
-        macro #{v.id}(name, &action)
-          #{v.id}({{name}}, ->({{action.args.first}} : HTTP::Server::Context) do
-              {{action.body}}
-              nil
-            end
-          )
-        end
-        "
+            append_child(Tjeneste::Routing::TerminalNode.new(
+              constraints: %constraints,
+              action: {{action}}
+            ))
+          end
+
+          macro #{v.id}(name, &action)
+            #{v.id}({{name}}, ->({{action.args.first}} : HTTP::Server::Context) do
+                {{action.body}}
+                nil
+              end
+            )
+          end
+          CRYSTAL
         %}
         {{code.id}}
       {% end %}
