@@ -7,18 +7,18 @@ describe Tjeneste::Routing::RouterPrinter do
     root = InnerNode.new(children: [
       TN.new(
         constraints: [
-          VerbRoutingConstraint.new(Tjeneste::Routing::Verb::POST),
-          PathRoutingConstraint.new("users/"),
+          HttpMethodConstraint.new(Tjeneste::Routing::Verb::POST),
+          PathConstraint.new("users/"),
         ] of RoutingConstraint
       ),
       InnerNode.new(
         constraints: [
-          PathRoutingConstraint.new("topics/"),
+          PathConstraint.new("topics/"),
         ] of RoutingConstraint,
         children: [
           TN.new(
             constraints: [
-              VerbRoutingConstraint.new(Tjeneste::Routing::Verb::GET),
+              HttpMethodConstraint.new(Tjeneste::Routing::Verb::GET),
               BindingPathConstraint.new("id", /\d+/),
             ] of RoutingConstraint
           ),

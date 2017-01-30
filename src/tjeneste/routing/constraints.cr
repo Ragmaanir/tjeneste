@@ -46,7 +46,7 @@ module Tjeneste
         regex.source
       end
 
-      def ==(other : BindingPathConstraint)
+      def ==(other : self)
         name == other.name && regex == other.regex
       end
 
@@ -59,7 +59,7 @@ module Tjeneste
       end
     end
 
-    class PathRoutingConstraint < RoutingConstraint
+    class PathConstraint < RoutingConstraint
       alias MatcherClasses = String | Regex
 
       getter matcher
@@ -87,7 +87,7 @@ module Tjeneste
         end
       end
 
-      def ==(other : PathRoutingConstraint) : Bool
+      def ==(other : self) : Bool
         @matcher == other.matcher
       end
 
@@ -100,7 +100,7 @@ module Tjeneste
       end
     end
 
-    class VerbRoutingConstraint < RoutingConstraint
+    class HttpMethodConstraint < RoutingConstraint
       getter verb : Verb
 
       def initialize(@verb)
@@ -114,7 +114,7 @@ module Tjeneste
         end
       end
 
-      def ==(other : VerbRoutingConstraint) : Bool
+      def ==(other : self) : Bool
         @verb == other.verb
       end
 

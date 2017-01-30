@@ -1,13 +1,13 @@
 require "./../spec_helper"
 
 describe Tjeneste::Routing::RouterBuilder do
-  InnerNode      = Tjeneste::Routing::InnerNode
-  TerminalNode   = Tjeneste::Routing::TerminalNode
-  VerbConstraint = Tjeneste::Routing::VerbRoutingConstraint
-  PathConstraint = Tjeneste::Routing::PathRoutingConstraint
+  InnerNode            = Tjeneste::Routing::InnerNode
+  TerminalNode         = Tjeneste::Routing::TerminalNode
+  HttpMethodConstraint = Tjeneste::Routing::HttpMethodConstraint
+  PathConstraint       = Tjeneste::Routing::PathConstraint
 
-  GetConstraint  = VerbConstraint.new(Tjeneste::Routing::Verb::GET)
-  PostConstraint = VerbConstraint.new(Tjeneste::Routing::Verb::POST)
+  GetConstraint  = HttpMethodConstraint.new(Tjeneste::Routing::Verb::GET)
+  PostConstraint = HttpMethodConstraint.new(Tjeneste::Routing::Verb::POST)
 
   NO_CONSTRAINTS = [] of Tjeneste::Routing::RoutingConstraint
 
@@ -79,7 +79,7 @@ describe Tjeneste::Routing::RouterBuilder do
           action: Tjeneste::EmptyBlock
         ),
         InnerNode.new(
-          constraints: [PathRoutingConstraint.new("topics")],
+          constraints: [PathConstraint.new("topics")],
           children: [
             TerminalNode.new(
               constraints: [
@@ -89,7 +89,7 @@ describe Tjeneste::Routing::RouterBuilder do
               action: Tjeneste::EmptyBlock
             ),
             InnerNode.new(
-              constraints: [PathRoutingConstraint.new("comments")],
+              constraints: [PathConstraint.new("comments")],
               children: [
                 TerminalNode.new(
                   constraints: [GetConstraint],

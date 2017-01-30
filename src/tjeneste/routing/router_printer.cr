@@ -35,9 +35,9 @@ module Tjeneste
       private def stringify_constraints(constraints : Array(RoutingConstraint)) : String
         constraints.map do |m|
           case m
-          when PathRoutingConstraint then m.matcher.inspect
+          when PathConstraint        then m.matcher.inspect
           when BindingPathConstraint then %[{"#{m.name}" => /#{m.regex.source}/}]
-          when VerbRoutingConstraint then m.verb
+          when HttpMethodConstraint  then m.verb
           else                            raise "unhandled constraint: #{m}"
           end
         end.join(" ")

@@ -76,7 +76,7 @@ module Tjeneste
           macro #{v.id}(name, action)
             %constraints = [] of Tjeneste::Routing::RoutingConstraint
 
-            %constraints << Tjeneste::Routing::VerbRoutingConstraint.new(Tjeneste::Routing::Verb::#{verb.id})
+            %constraints << Tjeneste::Routing::HttpMethodConstraint.new(Tjeneste::Routing::Verb::#{verb.id})
 
             {% if name.is_a?(NamedTupleLiteral) %}
               %constraints << Tjeneste::Routing::BindingPathConstraint.new(
@@ -85,7 +85,7 @@ module Tjeneste
               )
             {% else %}
               %name = {{name}}
-              %constraints << Tjeneste::Routing::PathRoutingConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
+              %constraints << Tjeneste::Routing::PathConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
             {% end %}
 
             append_child(Tjeneste::Routing::TerminalNode.new(
@@ -120,14 +120,14 @@ module Tjeneste
 
       macro mount(name, action)
         append_child(Tjeneste::Routing::TerminalNode.new(
-          constraints: [Tjeneste::Routing::PathRoutingConstraint.new({{name}})],
+          constraints: [Tjeneste::Routing::PathConstraint.new({{name}})],
           action: {{action}},
           ignore_remainder: true
         ))
       end
 
       macro path(name, &block)
-        %node = Tjeneste::Routing::InnerNode.new(constraints: [Tjeneste::Routing::PathRoutingConstraint.new({{name}})])
+        %node = Tjeneste::Routing::InnerNode.new(constraints: [Tjeneste::Routing::PathConstraint.new({{name}})])
         node_stack << %node
         build_block {{block}}
         node_stack.pop
