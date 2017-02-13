@@ -41,7 +41,7 @@ module Tjeneste
             case node
             when TerminalNode
               if node.ignore_remainder? || !next_state.remaining_segments?
-                return Route.new(node.path, node.action)
+                return Route.new(node.path, node.action, next_state.virtual_params)
               end
             when InnerNode
               state = next_state

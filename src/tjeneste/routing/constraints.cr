@@ -27,19 +27,24 @@ module Tjeneste
     end
 
     class BindingPathConstraint < RoutingConstraint
-      getter regex : Regex
+      getter regex : Regex # TODO add closure
       getter name : String
 
       def initialize(@name : String, @regex : Regex)
       end
 
       def match(request : RoutingState) : MatchResult
-        if request.remaining_segments? && (m = regex.match(request.current_segment))
-          # FIXME store binding somewhere
-          match_success(request)
+        if request.remaining_segments? && (m = full_match(regex, request.current_segment))
+          # match_success(request)
+          MatchSuccess.new(RoutingState.new(request, request.path_index + 1, {name => m[0]}))
         else
           match_failure(regex.source, request.inspect)
         end
+      end
+
+      private def full_match(regex : Regex, segment : String) : Regex::MatchData?
+        m = regex.match(segment)
+        m if m && m[0] == segment
       end
 
       def source

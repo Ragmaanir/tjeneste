@@ -1,43 +1,3 @@
-# module Tjeneste
-#   module Routing
-#     class RouterBuilder
-#       # def self.build(&block : NodeBuilder -> Nil) : Router
-#       #   router = new(block).result
-#       #   router.as(Router)
-#       # end
-
-#       macro build(&block)
-#         builder = RouterBuilder.new.build {{block}}
-#         builder.result
-#       end
-
-#       # getter result : Router
-
-#       # def initialize(&block : NodeBuilder -> Nil)
-#       #   children = NodeBuilder.build(&block)
-#       #   root_node = InnerNode.new(
-#       #     matchers: [PathMatcher.new("/")] of Matcher,
-#       #     children: children
-#       #   )
-#       #   @result = Router.new(root_node)
-#       # end
-
-#       def result : Router
-#         @result || raise
-#       end
-
-#       def build(&block)
-#         children = NodeBuilder.build(&block)
-#         root_node = InnerNode.new(
-#           matchers: [PathMatcher.new("/")] of Matcher,
-#           children: children
-#         )
-#         @result = Router.new(root_node)
-#       end
-#     end
-#   end
-# end
-
 module Tjeneste
   module Routing
     class RouterBuilder
@@ -48,7 +8,6 @@ module Tjeneste
       end
 
       def initialize
-        # @root = InnerNode.new(matchers: [PathMatcher.new("/")])
         @root = InnerNode.new(constraints: [] of RoutingConstraint)
         @node_stack = [@root] of InnerNode
       end
@@ -106,28 +65,30 @@ module Tjeneste
         {{code.id}}
       {% end %}
 
-      # macro post(name, &action)
-      #   current_node.children << TerminalNode.new(
-      #     matchers: [PathMatcher.new({{name}})],
-      #     action: ->(ctx : HTTP::Server::Context){
-      #       closure = ->(ctx : HTTP::Server::Context, &block : HTTP::Server::Context -> Nil) {
-      #         yield(ctx)
-      #       }
-      #       closure.call(ctx) {{action}}
-      #     }
-      #   )
-      # end
-
       macro mount(name, action)
+        %name = {{name}}
+        %constraints = [] of Tjeneste::Routing::RoutingConstraint
+        %constraints << Tjeneste::Routing::PathConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
+
         append_child(Tjeneste::Routing::TerminalNode.new(
-          constraints: [Tjeneste::Routing::PathConstraint.new({{name}})],
+          constraints: %constraints,
           action: {{action}},
           ignore_remainder: true
         ))
       end
 
       macro path(name, &block)
-        %node = Tjeneste::Routing::InnerNode.new(constraints: [Tjeneste::Routing::PathConstraint.new({{name}})])
+        %constraints = [] of Tjeneste::Routing::RoutingConstraint
+        {% if name.is_a?(NamedTupleLiteral) %}
+          %constraints << Tjeneste::Routing::BindingPathConstraint.new(
+            name: {{name.keys.first.stringify}},
+            regex: {{name.values.first}}
+          )
+        {% else %}
+          %name = {{name}}
+          %constraints << Tjeneste::Routing::PathConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
+        {% end %}
+        %node = Tjeneste::Routing::InnerNode.new(constraints: %constraints)
         node_stack << %node
         build_block {{block}}
         node_stack.pop

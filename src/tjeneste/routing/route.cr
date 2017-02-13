@@ -5,16 +5,17 @@ module Tjeneste
     class Route
       getter path : Array(Node)
       getter action : Action | HTTP::Handler | HttpBlock
+      getter virtual_params : Hash(String, String)
 
-      def initialize(@path, @action)
+      def initialize(@path, @action, @virtual_params)
       end
 
-      def url
-        path.map do |node|
-          matcher = node.matchers.find { |m| m.is_a?(PathMatcher) }
-          case matcher
-          when PathMatcher then matcher.matcher
-          end
+      def call_action(context : HTTP::Server::Context)
+        case a = action
+        when HTTP::Handler       then a.call(context)
+        when Tjeneste::HttpBlock then a.call(context)
+        when Action              then a.call_wrapper(context, self)
+        else                          raise("Invalid action type #{action.class}")
         end
       end
     end

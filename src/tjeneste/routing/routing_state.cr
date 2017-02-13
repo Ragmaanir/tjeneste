@@ -5,15 +5,16 @@ module Tjeneste
       getter path : String
       getter path_index : Int32
       getter segments : Array(String)
+      getter virtual_params : Hash(String, String)
 
-      def initialize(@request, @path_index = 0)
+      def initialize(@request, @path_index = 0, @virtual_params = {} of String => String)
         @path = (request.path || "").sub(%r{/\z}, "")
         @segments = @path.split("/").skip(1)
         Kontrakt.precondition(path_index <= segments.size, "#{path_index} <= #{segments}")
       end
 
-      def initialize(request : RoutingState, path_index = 0)
-        initialize(request.request, path_index)
+      def initialize(request : RoutingState, path_index = 0, virtual_params = {} of String => String)
+        initialize(request.request, path_index, request.virtual_params.merge(virtual_params))
       end
 
       # def path

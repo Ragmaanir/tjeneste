@@ -22,32 +22,17 @@ describe Tjeneste::Routing::Router do
     end
 
     # req 1
-    req = HTTP::Request.new("POST", "/topics/test")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
-
-    route = router.route!(req)
-
-    route.action.as(Tjeneste::HttpBlock).call(ctx)
+    route!(router, "POST", "/topics/test")
 
     assert results == ["create"]
 
     # req 2
-    req = HTTP::Request.new("GET", "/topics/1")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
-
-    route = router.route!(req)
-
-    route.action.as(Tjeneste::HttpBlock).call(ctx)
+    route!(router, "GET", "/topics/1")
 
     assert results == ["create", "show"]
 
     # req 3
-    req = HTTP::Request.new("GET", "/")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
-
-    route = router.route!(req)
-
-    route.action.as(Tjeneste::HttpBlock).call(ctx)
+    route!(router, "GET", "/")
 
     assert results == ["create", "show", "root"]
   end
@@ -96,30 +81,19 @@ describe "Routing" do
 
   test "path parameters" do
     invocations = [] of String
-    # action = ->(ctx : HTTP::Server::Context) {
-    #   invocations << ctx.params["id"]
-    #   nil
-    # }
 
     router = Tjeneste::Routing::RouterBuilder.build do
       path "topics" do
-        get({id: /\d/}) do |ctx|
-          # invocations << ctx.request.query_params["id"]
+        get({id: /\d+/}) do |ctx|
           invocations << [ctx.request.path, ctx.request.query].join
           nil
         end
       end
     end
 
-    m = Tjeneste::Middlewares::RoutingMiddleware.new(router)
+    route!(router, "GET", "/topics/12345")
 
-    req = HTTP::Request.new("GET", "/topics/12345")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
-    m.call(ctx)
-
-    req = HTTP::Request.new("GET", "/topics/test")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
-    m.call(ctx)
+    assert !route_for(router, "GET", "/topics/test")
 
     assert invocations == ["/topics/12345"]
   end
@@ -137,11 +111,7 @@ describe "Routing" do
       get "", action_b
     end
 
-    req = HTTP::Request.new("GET", "/topics")
-    ctx = HTTP::Server::Context.new(req, HTTP::Server::Response.new(IO::Memory.new("")))
-
-    m = Tjeneste::Middlewares::RoutingMiddleware.new(router)
-    m.call(ctx)
+    route!(router, "GET", "/topics")
 
     assert actions == [:action_a]
   end
@@ -153,10 +123,6 @@ describe "Actions" do
 
     class Params
       include Tjeneste::Action::Params
-    end
-
-    class Data
-      include Tjeneste::Action::Data
 
       mapping(
         a: Int32,
@@ -169,9 +135,13 @@ describe "Actions" do
       end
     end
 
+    class Data
+      include Tjeneste::Action::Data
+    end
+
     def call(params : Params, data : Data)
-      data.validate!
-      json_response(data.a + data.b)
+      params.validate!
+      json_response(params.a + params.b)
     end
   end
 
@@ -186,6 +156,21 @@ describe "Actions" do
 
     route = router.route!(req)
     assert route.action.is_a?(SampleAction)
+  end
+
+  test "action receives path-parameters" do
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "topics" do
+        get({a: /\d+/}, SampleAction.new)
+      end
+    end
+
+    resp, ctx = lazy_request("GET", "/topics/1337?b=5")
+
+    route = router.route!(ctx.request)
+    route.action.as(SampleAction).call_wrapper(ctx, route)
+
+    assert resp.call.body == "1342"
   end
 end
 

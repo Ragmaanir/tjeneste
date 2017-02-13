@@ -126,9 +126,7 @@ describe Tjeneste::Routing::RouterBuilder do
       constraints: NO_CONSTRAINTS,
       children: [
         TerminalNode.new(
-          constraints: [
-            PathConstraint.new(""),
-          ],
+          constraints: [] of Tjeneste::Routing::RoutingConstraint,
           action: handler
         ),
       ]

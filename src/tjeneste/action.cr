@@ -26,14 +26,14 @@ module Tjeneste
     macro included
       include ResponseHelpers
 
-      def self.call(context : HTTP::Server::Context)
-        new.call_wrapper(context)
+      def self.call(context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
+        new.call_wrapper(context, route)
       end
 
       # FIXME make sure that the router instantiates new actions every time
-      def call_wrapper(context : HTTP::Server::Context)
+      def call_wrapper(context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
         r = context.request
-        params = Params.new(r.query_params)
+        params = Params.new(r.query_params.to_h.merge(route.virtual_params))
         data = Data.load(r.body.to_s || "") # FIXME handle IO and other types
         params.validate!
         data.validate!
@@ -52,7 +52,7 @@ module Tjeneste
     module Params
       include Validations
 
-      def initialize(input : HTTP::Params)
+      def initialize(input : Hash(String, String))
       end
 
       macro mapping(**properties)
@@ -64,7 +64,7 @@ module Tjeneste
           getter {{name}} : {{type}}
         {% end %}
 
-        def initialize(input : HTTP::Params)
+        def initialize(input : Hash(String, String))
           {% for name, kind in hash %}
             value = input["{{name}}"]
             {%
