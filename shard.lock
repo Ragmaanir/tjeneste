@@ -10,9 +10,5 @@ shards:
 
   microtest:
     github: ragmaanir/microtest
-    commit: 5380feba61a8dd8ed6168da03d4f4c1b7ef7ebaf
-
-  regnbue:
-    github: ragmaanir/regnbue
-    commit: 5efbd2035adb197fb2ac4d1c7fee7de2fa97eccd
+    commit: 207a1ca805fff1faa1e12f45c3db54642bb87b97
 
