@@ -66,19 +66,19 @@ module Tjeneste
       end
 
       macro validations(&block)
-        def validate : ValidationResult
-          res = [] of ExpressionResult
+        def validate : Tjeneste::Action::ValidationResult
+          res = [] of Tjeneste::Action::ExpressionResult
 
           {% if block.body.is_a?(Expressions) %}
             {% for e, i in block.body.expressions %}
-              res << ExpressionResult.new(({{e}}), "{{e}}")
+              res << Tjeneste::Action::ExpressionResult.new(({{e}}), "{{e}}")
             {% end %}
           {% else %}
             {% e = block.body %}
-            res << ExpressionResult.new(({{e}}), "{{e}}")
+            res << Tjeneste::Action::ExpressionResult.new(({{e}}), "{{e}}")
           {% end %}
 
-          ValidationResult.new(res)
+          Tjeneste::Action::ValidationResult.new(res)
         end
 
         def expressions

@@ -17,12 +17,3 @@ dependencies:
 ```crystal
 require "tjeneste"
 ```
-
-## TODO
-
-- controllers
-- route helpers
-- response generation helpers
-- simple json generation helpers
-- instrumentation/events
-- benchmark tests

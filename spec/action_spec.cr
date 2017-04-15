@@ -1,15 +1,17 @@
 require "./spec_helper"
 
 describe Tjeneste::Action do
+  APP = 1337
+
   class SampleAction
-    include Tjeneste::Action
+    include Tjeneste::Action::Base(Int32)
 
     class Params
-      include Tjeneste::Action::Params
+      include Tjeneste::Action::Base::Params
     end
 
     class Data
-      include Tjeneste::Action::Data
+      include Tjeneste::Action::Base::Data
 
       mapping(
         a: Int32,
@@ -38,7 +40,7 @@ describe Tjeneste::Action do
     resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
-    SampleAction.call(c, empty_route(SampleAction.new))
+    SampleAction.call(APP, c, empty_route(SampleAction.new(APP)))
     io.rewind
     resp = HTTP::Client::Response.from_io(io)
     assert resp.body == "1666"
@@ -49,6 +51,6 @@ describe Tjeneste::Action do
     resp = HTTP::Server::Response.new(IO::Memory.new(1000))
     c = HTTP::Server::Context.new(req, resp)
 
-    assert_raises(Tjeneste::Action::ValidationError) { SampleAction.call(c, empty_route(SampleAction.new)) }
+    assert_raises(Tjeneste::Action::ValidationError) { SampleAction.call(APP, c, empty_route(SampleAction.new(APP))) }
   end
 end

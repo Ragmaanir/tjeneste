@@ -96,10 +96,11 @@ module Tjeneste
 
       EMPTY_HANDLER = EmptyHandler.new
 
-      getter action : Action | HTTP::Handler | HttpBlock # FIXME action can be a class or an instance
+      alias Actions = Action::AbstractLazyAction | Action::AbstractAction | HTTP::Handler | HttpBlock # FIXME action can be a class or an instance
 
+      getter action : Actions
 
-      def initialize(constraints : Array(RoutingConstraint), @action : Action, @ignore_remainder : Bool = false)
+      def initialize(constraints : Array(RoutingConstraint), @action : Actions, @ignore_remainder : Bool = false)
         super(constraints)
       end
 

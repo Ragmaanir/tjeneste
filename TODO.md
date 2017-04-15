@@ -1,8 +1,16 @@
 
-- implement routing algorithm
-  - change node structure
-  - only allow http-method matching at leafs
-  - be able to list all routes
-  - generate url-helpers
-  - capture groups in url like "users/@id"
-    - do it like path(id => /[0-9]+/) { ... }
+TODO
+-----
+
+- Routing: list all defined routes
+- Routing: generate url-helpers
+- benchmarks
+- instrumentation
+- JSON helpers
+- Redesign middleware solution
+
+DONE
+-----
+
+- Routing: binding path constraint: `get({id: /\d+/}) { |ctx| ... }`
+- RouterBuilder

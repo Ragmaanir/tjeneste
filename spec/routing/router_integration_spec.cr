@@ -118,11 +118,13 @@ describe "Routing" do
 end
 
 describe "Actions" do
+  APP = 1337
+
   class SampleAction
-    include Tjeneste::Action
+    include Tjeneste::Action::Base(Int32)
 
     class Params
-      include Tjeneste::Action::Params
+      include Tjeneste::Action::Base::Params
 
       mapping(
         a: Int32,
@@ -136,41 +138,43 @@ describe "Actions" do
     end
 
     class Data
-      include Tjeneste::Action::Data
+      include Tjeneste::Action::Base::Data
     end
 
     def call(params : Params, data : Data)
       params.validate!
-      json_response(params.a + params.b)
+      json_response(context + params.a + params.b)
     end
   end
 
   test "returns route with action" do
     router = Tjeneste::Routing::RouterBuilder.build do
       path "topics" do
-        get "", SampleAction.new
+        get "", SampleAction.new(APP)
       end
     end
 
     req = HTTP::Request.new("GET", "/topics")
 
     route = router.route!(req)
-    assert route.action.is_a?(SampleAction)
+    assert route.action.is_a?(Tjeneste::Action::AbstractAction)
+    assert route.action.class == SampleAction # FIXME crystal bug
   end
 
   test "action receives path-parameters" do
     router = Tjeneste::Routing::RouterBuilder.build do
       path "topics" do
-        get({a: /\d+/}, SampleAction.new)
+        get({a: /\d+/}, Tjeneste::Action::LazyAction.new(APP) { |app| SampleAction.new(app) })
       end
     end
 
     resp, ctx = lazy_request("GET", "/topics/1337?b=5")
 
     route = router.route!(ctx.request)
-    route.action.as(SampleAction).call_wrapper(ctx, route)
 
-    assert resp.call.body == "1342"
+    route.call_action(ctx)
+
+    assert resp.call.body == (APP + 1337 + 5).to_s
   end
 end
 
