@@ -1,19 +1,31 @@
 module Tjeneste
   module Routing
-    class RouterBuilder
+    class RouterBuilder(C)
       macro build(&block)
-        b = Tjeneste::Routing::RouterBuilder.new
-        b.build_block {{block}}
-        Tjeneste::Routing::Router.new(b.root)
+        %b = Tjeneste::Routing::RouterBuilder(Nil).new(nil)
+        %b.build_block {{block}}
+        Tjeneste::Routing::Router.new(%b.root)
       end
 
-      def initialize
+      macro build(context, &block)
+        #%b = Tjeneste::Routing::RouterBuilder.new(context)
+        %b = Tjeneste::Routing::RouterBuilder.instantiate({{context}})
+        %b.build_block {{block}}
+        Tjeneste::Routing::Router.new(%b.root)
+      end
+
+      def self.instantiate(context : C) forall C
+        Tjeneste::Routing::RouterBuilder(C).new(context)
+      end
+
+      def initialize(@context)
         @root = InnerNode.new(constraints: [] of RoutingConstraint)
         @node_stack = [@root] of InnerNode
       end
 
       getter root : InnerNode
       getter node_stack : Array(InnerNode)
+      getter context : C
 
       def current_node
         @node_stack.last
@@ -47,9 +59,22 @@ module Tjeneste
               %constraints << Tjeneste::Routing::PathConstraint.new(%name) unless %name.is_a?(String) && %name.to_s.empty?
             {% end %}
 
+            %action = {{action}}
+
+            %action = case %action
+            when Class
+              raise "err" unless %action <= Tjeneste::Action::AbstractAction
+              #%a = %action.as(Tjeneste::Action::AbstractAction.class)
+              #%a = typeof(%action.new)
+              %a = %action
+              Tjeneste::Action::LazyAction.new(context) { |app| %a.new(app) }
+            else
+              %action
+            end
+
             append_child(Tjeneste::Routing::TerminalNode.new(
               constraints: %constraints,
-              action: {{action}}
+              action: %action
             ))
           end
 

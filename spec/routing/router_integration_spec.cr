@@ -162,9 +162,9 @@ describe "Actions" do
   end
 
   test "action receives path-parameters" do
-    router = Tjeneste::Routing::RouterBuilder.build do
+    router = Tjeneste::Routing::RouterBuilder.build(APP) do
       path "topics" do
-        get({a: /\d+/}, Tjeneste::Action::LazyAction.new(APP) { |app| SampleAction.new(app) })
+        get({a: /\d+/}, SampleAction)
       end
     end
 

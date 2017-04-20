@@ -3,6 +3,12 @@ require "colorize"
 require "kontrakt"
 require "besked"
 
+class Class
+  def <=(other : T.class) forall T
+    {{@type <= T}}
+  end
+end
+
 require "./tjeneste/**"
 
 module Tjeneste
