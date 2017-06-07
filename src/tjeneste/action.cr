@@ -47,6 +47,10 @@ module Tjeneste
         def empty_response(headers : Hash(String, String) = {} of String => String)
           {204, "", headers}
         end
+
+        def status_response(status : Int32, headers : Hash(String, String) = {} of String => String)
+          {status, "", headers}
+        end
       end
 
       macro included
@@ -65,7 +69,13 @@ module Tjeneste
         def call_wrapper(context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
           r = context.request
           params = Params.new(r.query_params.to_h.merge(route.virtual_params))
-          data = Data.load(r.body.to_s || "") # FIXME handle IO and other types
+
+          data_str = case b = r.body
+          when IO then b.gets_to_end
+          else ""
+          end
+
+          data = Data.load(data_str) # FIXME handle IO and other types
           params.validate!
           data.validate!
 
@@ -76,7 +86,16 @@ module Tjeneste
             context.response.headers.add(k, v)
           end
           context.response.print(body)
-          context.response.close
+        rescue JSON::ParseException
+          context.response.status_code = 400
+        # rescue e : Exception
+        #   context.response.status_code = 500
+        #   context.response.print(e.message)
+        #   # context.response.print(e.backtrace)
+        #   puts e.message
+        #   puts e.backtrace
+        # ensure
+        #   context.response.close
         end
       end # included
 
@@ -101,6 +120,7 @@ module Tjeneste
               {%
                 t = kind.stringify
                 assignment = {
+                  "Int64"   => "value.to_i64(whitespace: false)",
                   "Int32"   => "value.to_i32(whitespace: false)",
                   "Float32" => "value.to_f32(whitespace: false)",
                   "Time"    => "value",
@@ -128,10 +148,6 @@ module Tjeneste
 
         macro mapping(**properties)
           Tjeneste::Action::Base::Data.mapping({{properties}})
-
-          def self.load(str : String)
-            from_json(str)
-          end
         end
 
         macro mapping(hash)

@@ -27,16 +27,6 @@ module Tjeneste
         children = [@internal_root]
 
         while node = children.shift?
-          # puts [
-          #   node.object_id,
-          #   node.depth,
-          #   node.class.name.sub(/Tjeneste::Routing::/, ""),
-          #   state.inspect,
-          #   state.remaining_segments?,
-          #   node.matchers.map { |m| m.to_s },
-          #   children.map(&.object_id),
-          # ].join(" - ")
-
           if next_state = node.match(state)
             case node
             when TerminalNode

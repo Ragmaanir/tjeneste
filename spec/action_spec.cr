@@ -41,6 +41,7 @@ describe Tjeneste::Action do
     c = HTTP::Server::Context.new(req, resp)
 
     SampleAction.call(APP, c, empty_route(SampleAction.new(APP)))
+    resp.close
     io.rewind
     resp = HTTP::Client::Response.from_io(io)
     assert resp.body == "1666"
@@ -48,9 +49,12 @@ describe Tjeneste::Action do
 
   test "validations fail" do
     req = HTTP::Request.new("GET", "/topics?id=5", nil, {a: -1, b: 1}.to_json)
-    resp = HTTP::Server::Response.new(IO::Memory.new(1000))
+    io = IO::Memory.new(1000)
+    resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
-    assert_raises(Tjeneste::Action::ValidationError) { SampleAction.call(APP, c, empty_route(SampleAction.new(APP))) }
+    assert_raises(Tjeneste::Action::ValidationError) do
+      SampleAction.call(APP, c, empty_route(SampleAction.new(APP)))
+    end
   end
 end
