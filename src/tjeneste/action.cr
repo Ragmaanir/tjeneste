@@ -12,22 +12,22 @@ module Tjeneste
       end
     end
 
-    class LazyAction(A) < AbstractLazyAction
-      getter context : A
-      getter action_factory : A -> Action::AbstractAction
+    class LazyAction(App, Ctx) < AbstractLazyAction
+      getter app : App
+      getter action_factory : (App) -> Action::AbstractAction
 
-      def initialize(@context : A, &@action_factory : A -> Action::AbstractAction)
+      def initialize(@app, &@action_factory : (App) -> Action::AbstractAction)
       end
 
       def call(ctx : HTTP::Server::Context, route : Tjeneste::Routing::Route)
-        @action_factory.call(@context).call_wrapper(ctx, route)
+        @action_factory.call(app).call_wrapper(ctx, route)
       end
     end
 
     module AbstractAction
     end
 
-    module Base(A)
+    module Base(App, Ctx)
       include AbstractAction
 
       module MIME
@@ -56,18 +56,36 @@ module Tjeneste
       macro included
         include ResponseHelpers
 
-        getter context : A
+        @context : Ctx?
 
-        def initialize(@context : A)
+        # def self.call(app : App, context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
+        #   new.call_wrapper(Ctx.new(app, context), context, route)
+        # end
+
+        def self.call(app : App, context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
+          new(app).call_wrapper(context, route)
         end
 
-        def self.call(ctx : A, context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
-          new(ctx).call_wrapper(context, route)
+        def initialize(@app : App)
+        end
+
+        getter app : App
+
+        def context
+          @context.not_nil!
+        end
+
+        private def with_context(ctx : Ctx)
+          @context = ctx
+          yield
+        ensure
+          @context = nil
         end
 
         # FIXME make sure that the router instantiates new actions every time
-        def call_wrapper(context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
-          r = context.request
+        def call_wrapper(http_context : HTTP::Server::Context, route : Tjeneste::Routing::Route)
+          @context = Ctx.new(app, http_context)
+          r = http_context.request
           params = Params.new(r.query_params.to_h.merge(route.virtual_params))
 
           data_str = case b = r.body
@@ -79,15 +97,17 @@ module Tjeneste
           params.validate!
           data.validate!
 
-          status, body, headers = call(params, data)
-
-          context.response.status_code = status
-          headers.each do |k, v|
-            context.response.headers.add(k, v)
+          status, body, headers = with_context(context) do
+            call(params, data)
           end
-          context.response.print(body)
+
+          http_context.response.status_code = status
+          headers.each do |k, v|
+            http_context.response.headers.add(k, v)
+          end
+          http_context.response.print(body)
         rescue JSON::ParseException
-          context.response.status_code = 400
+          http_context.response.status_code = 400
         # rescue e : Exception
         #   context.response.status_code = 500
         #   context.response.print(e.message)

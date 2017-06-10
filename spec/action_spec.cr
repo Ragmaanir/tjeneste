@@ -3,8 +3,20 @@ require "./spec_helper"
 describe Tjeneste::Action do
   APP = 1337
 
+  class Context
+    getter app : Int32
+    getter http_context : HTTP::Server::Context
+
+    def initialize(@app, @http_context)
+    end
+
+    def session
+      1
+    end
+  end
+
   class SampleAction
-    include Tjeneste::Action::Base(Int32)
+    include Tjeneste::Action::Base(Int32, Context)
 
     class Params
       include Tjeneste::Action::Base::Params
@@ -26,7 +38,7 @@ describe Tjeneste::Action do
 
     def call(params : Params, data : Data)
       data.validate!
-      json_response(data.a + data.b)
+      json_response(context.session + data.a + data.b)
     end
   end
 
@@ -40,11 +52,12 @@ describe Tjeneste::Action do
     resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
-    SampleAction.call(APP, c, empty_route(SampleAction.new(APP)))
+    # SampleAction.new.call(APP, c, empty_route(SampleAction.new))
+    SampleAction.new(APP).call_wrapper(c, empty_route(SampleAction.new(APP)))
     resp.close
     io.rewind
     resp = HTTP::Client::Response.from_io(io)
-    assert resp.body == "1666"
+    assert resp.body == "1667"
   end
 
   test "validations fail" do
@@ -54,7 +67,8 @@ describe Tjeneste::Action do
     c = HTTP::Server::Context.new(req, resp)
 
     assert_raises(Tjeneste::Action::ValidationError) do
-      SampleAction.call(APP, c, empty_route(SampleAction.new(APP)))
+      # SampleAction.new.call(APP, c, empty_route(SampleAction.new))
+      SampleAction.new(APP).call_wrapper(c, empty_route(SampleAction.new(APP)))
     end
   end
 end

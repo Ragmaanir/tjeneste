@@ -120,8 +120,16 @@ end
 describe "Actions" do
   APP = 1337
 
+  class Context
+    getter app : Int32
+    getter http_context : HTTP::Server::Context
+
+    def initialize(@app, @http_context)
+    end
+  end
+
   class SampleAction
-    include Tjeneste::Action::Base(Int32)
+    include Tjeneste::Action::Base(Int32, Context)
 
     class Params
       include Tjeneste::Action::Base::Params
@@ -143,12 +151,12 @@ describe "Actions" do
 
     def call(params : Params, data : Data)
       params.validate!
-      json_response(context + params.a + params.b)
+      json_response(app + params.a + params.b)
     end
   end
 
   test "returns route with action" do
-    router = Tjeneste::Routing::RouterBuilder.build do
+    router = Tjeneste::Routing::RouterBuilder.build(APP, Int32, Context) do
       path "topics" do
         get "", SampleAction.new(APP)
       end
@@ -162,7 +170,7 @@ describe "Actions" do
   end
 
   test "action receives path-parameters" do
-    router = Tjeneste::Routing::RouterBuilder.build(APP) do
+    router = Tjeneste::Routing::RouterBuilder.build(APP, Int32, Context) do
       path "topics" do
         get({a: /\d+/}, SampleAction)
       end

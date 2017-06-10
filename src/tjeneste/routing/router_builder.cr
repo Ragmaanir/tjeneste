@@ -1,31 +1,33 @@
 module Tjeneste
   module Routing
-    class RouterBuilder(C)
+    class RouterBuilder(App, Ctx)
       macro build(&block)
-        %b = Tjeneste::Routing::RouterBuilder(Nil).new(nil)
+        %b = Tjeneste::Routing::RouterBuilder(Nil, Nil).new(nil)
         %b.build_block {{block}}
         Tjeneste::Routing::Router.new(%b.root)
       end
 
-      macro build(context, &block)
+      macro build(app, app_cls, ctx_cls, &block)
         #%b = Tjeneste::Routing::RouterBuilder.new(context)
-        %b = Tjeneste::Routing::RouterBuilder.instantiate({{context}})
+        #%b = Tjeneste::Routing::RouterBuilder.instantiate({ {context}})
+        %b = Tjeneste::Routing::RouterBuilder({{app_cls}}, {{ctx_cls}}).new({{app}})
         %b.build_block {{block}}
         Tjeneste::Routing::Router.new(%b.root)
       end
 
-      def self.instantiate(context : C) forall C
-        Tjeneste::Routing::RouterBuilder(C).new(context)
-      end
+      # def self.instantiate(context : C) forall C
+      #   Tjeneste::Routing::RouterBuilder(C).new(context)
+      # end
 
-      def initialize(@context)
+      def initialize(@app)
         @root = InnerNode.new(constraints: [] of RoutingConstraint)
         @node_stack = [@root] of InnerNode
       end
 
       getter root : InnerNode
+
       getter node_stack : Array(InnerNode)
-      getter context : C
+      getter app : App
 
       def current_node
         @node_stack.last
@@ -38,6 +40,10 @@ module Tjeneste
       def append_child(node : Node)
         node.parent = current_node
         current_node.children << node
+      end
+
+      def create_lazy_action(action)
+        Tjeneste::Action::LazyAction(App, Ctx).new(app) { action.new(app) }
       end
 
       {% for verb in Verb.constants %}
@@ -67,7 +73,8 @@ module Tjeneste
               #%a = %action.as(Tjeneste::Action::AbstractAction.class)
               #%a = typeof(%action.new)
               %a = %action
-              Tjeneste::Action::LazyAction.new(context) { |app| %a.new(app) }
+              #Tjeneste::Action::LazyAction(App, Ctx).new(app) { |app| %a.new(app) }
+              create_lazy_action(%a)
             else
               %action
             end
