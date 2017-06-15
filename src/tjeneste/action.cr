@@ -106,7 +106,7 @@ module Tjeneste
             http_context.response.headers.add(k, v)
           end
           http_context.response.print(body)
-        rescue JSON::ParseException
+        rescue JSON::ParseException | Tjeneste::Action::ValidationError
           http_context.response.status_code = 400
         # rescue e : Exception
         #   context.response.status_code = 500

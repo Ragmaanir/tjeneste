@@ -62,7 +62,7 @@ module Tjeneste
       def validate!
         res = validate
 
-        raise ValidationError.new if res.errors?
+        raise ValidationError.new("Validation failed") if res.errors?
       end
 
       macro validations(&block)

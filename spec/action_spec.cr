@@ -52,8 +52,8 @@ describe Tjeneste::Action do
     resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
-    # SampleAction.new.call(APP, c, empty_route(SampleAction.new))
     SampleAction.new(APP).call_wrapper(c, empty_route(SampleAction.new(APP)))
+
     resp.close
     io.rewind
     resp = HTTP::Client::Response.from_io(io)
@@ -66,9 +66,11 @@ describe Tjeneste::Action do
     resp = HTTP::Server::Response.new(io)
     c = HTTP::Server::Context.new(req, resp)
 
-    assert_raises(Tjeneste::Action::ValidationError) do
-      # SampleAction.new.call(APP, c, empty_route(SampleAction.new))
-      SampleAction.new(APP).call_wrapper(c, empty_route(SampleAction.new(APP)))
-    end
+    SampleAction.new(APP).call_wrapper(c, empty_route(SampleAction.new(APP)))
+
+    resp.close
+    io.rewind
+    resp = HTTP::Client::Response.from_io(io)
+    assert resp.status_code == 400
   end
 end
