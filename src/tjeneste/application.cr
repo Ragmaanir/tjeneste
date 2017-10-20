@@ -1,27 +1,23 @@
-require "./server"
 require "./middleware"
 require "./routing/**"
 
 module Tjeneste
   abstract class Application
     getter logger : Logger
+    getter! middleware : HttpBlock
 
-    @middleware_stack : HttpBlock?
-
-    def initialize(@port : Int32 = 3000, @logger = Logger.new(STDOUT))
-      @server = Tjeneste::Server.new(@port, @logger) do |ctx|
-        middleware_stack.call(ctx)
-      end
-    end
-
-    def middleware_stack
-      @middleware_stack ||= build_middleware
+    def initialize(@logger = Logger.new(STDOUT))
+      @middleware = build_middleware
     end
 
     abstract def build_middleware : HttpBlock
+  end
 
-    def run
-      @server.start
+  def self.run_application(app, port)
+    server = HTTP::Server.new(port) do |ctx|
+      app.middleware.call(ctx)
     end
+
+    server.listen
   end
 end

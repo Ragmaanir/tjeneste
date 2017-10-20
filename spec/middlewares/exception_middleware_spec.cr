@@ -17,11 +17,24 @@ describe Tjeneste::Middlewares::ExceptionMiddleware do
     end
   end
 
-  test "catches exception then calls callbacks and returns 500" do
-    sub = Sub.new
+  class Endpoint
+    include HTTP::Handler
 
-    m = Tjeneste::Middlewares::ExceptionMiddleware.new(
-      ->(c : HTTP::Server::Context) { [""][2]; nil }
+    def call(context : HTTP::Server::Context)
+      raise("exception") if 1 > 0
+    end
+  end
+
+  test "catches exception then calls callbacks and returns 500" do
+    exc = nil
+    sub = Sub.new
+    endpoint = Endpoint.new
+
+    m = Tjeneste::Middlewares::ExceptionMiddleware.new(endpoint,
+      ->(c : HTTP::Server::Context, e : Exception) {
+        exc = e
+        nil
+      }
     )
 
     m.publisher.subscribe(sub)
@@ -30,6 +43,11 @@ describe Tjeneste::Middlewares::ExceptionMiddleware do
     assert resp.status_code == 500
 
     assert sub.events.size == 1
-    assert sub.events.first.exception.class == IndexError
+
+    exception = sub.events.first.exception
+    assert exception.class == Exception
+    assert exception.message == "exception"
+
+    assert exc == exception
   end
 end

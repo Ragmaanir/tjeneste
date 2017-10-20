@@ -98,6 +98,27 @@ describe "Routing" do
     assert invocations == ["/topics/12345"]
   end
 
+  test "path parameters and nested actions" do
+    invocations = [] of String
+
+    router = Tjeneste::Routing::RouterBuilder.build do
+      path "topics" do
+        path({id: /\d+/}) do
+          get "name" do |ctx|
+            invocations << [ctx.request.path, ctx.request.query].join
+            nil
+          end
+        end
+      end
+    end
+
+    route!(router, "GET", "/topics/12345/name")
+
+    assert !route_for(router, "GET", "/topics/123/test")
+
+    assert invocations == ["/topics/12345/name"]
+  end
+
   test "router uses depth first search" do
     actions = [] of Symbol
     action_a = ->(ctx : HTTP::Server::Context) { actions << :action_a; nil }
@@ -183,6 +204,55 @@ describe "Actions" do
     route.call_action(ctx)
 
     assert resp.call.body == (APP + 1337 + 5).to_s
+  end
+end
+
+describe ComplicatedActions do
+  APP = 1337
+
+  class Context
+    getter app : Int32
+    getter http_context : HTTP::Server::Context
+
+    def initialize(@app, @http_context)
+    end
+  end
+
+  class SampleAction
+    include Tjeneste::Action::Base(Int32, Context)
+
+    class Params
+      include Tjeneste::Action::Base::Params
+
+      mapping(slug: String)
+    end
+
+    class Data
+      include Tjeneste::Action::Base::Data
+    end
+
+    def call(params : Params, data : Data)
+      json_response(params.slug)
+    end
+  end
+
+  test "action receives path-parameters" do
+    router = Tjeneste::Routing::RouterBuilder.build(APP, Int32, Context) do
+      path "topics" do
+        path({slug: /\w+/}) do
+          get("test", SampleAction)
+          get("other", SampleAction)
+        end
+      end
+    end
+
+    resp, ctx = lazy_request("GET", "/topics/thetopic/test")
+
+    route = router.route!(ctx.request)
+
+    route.call_action(ctx)
+
+    assert resp.call.body == "thetopic".to_json
   end
 end
 

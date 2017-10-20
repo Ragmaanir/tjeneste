@@ -1,3 +1,5 @@
+require "http"
+
 module Tjeneste
   module Routing
     abstract class Node

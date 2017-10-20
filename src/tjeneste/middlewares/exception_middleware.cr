@@ -1,7 +1,9 @@
 module Tjeneste
   module Middlewares
     class ExceptionMiddleware
-      struct ExceptionEvent
+      include HTTP::Handler
+
+      class ExceptionEvent
         getter exception : Exception
         getter context : HTTP::Server::Context
 
@@ -20,18 +22,23 @@ module Tjeneste
         nil
       }
 
-      getter successor : HttpBlock
+      getter! next : HTTP::Handler
+      getter callback : (HTTP::Server::Context, Exception) -> Nil
       getter publisher : Publisher
 
-      def initialize(@successor, @callback : (HTTP::Server::Context, Exception) -> Nil = DEFAULT_CALLBACK, @publisher : Publisher = Publisher.new)
+      def initialize(@next, @callback = DEFAULT_CALLBACK, @publisher : Publisher = Publisher.new)
       end
 
       def call(context : HTTP::Server::Context)
-        @successor.call(context)
+        call_next(context)
       rescue exception : Exception
+        context.response.status_code = 500
+        context.response.puts "Internal Server Error"
+        context.response.close
+
         @callback.call(context, exception)
         @publisher.publish(ExceptionEvent.new(context, exception))
       end
-    end
+    end # ExceptionMiddleware
   end
 end
