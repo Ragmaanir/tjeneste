@@ -1,12 +1,16 @@
 module Tjeneste
   module Routing
     enum Verb
-      GET    = 1
-      POST   = 2
-      PUT    = 3
-      PATCH  = 4
-      DELETE = 5
-      HEAD   = 6
+      GET
+      POST
+      PUT
+      PATCH
+      DELETE
+      HEAD
+      REPORT
+      TRACE
+      CONNECT
+      OPTIONS
     end
 
     abstract class RoutingConstraint
